@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from swift.common.middleware.cdmiapp.cdmibase import \
+from cdmibase import \
     (Consts, Controller, concat_parts)
-from swift.common.middleware.cdmiapp.cdmiutils import \
+from cdmiutils import \
     (get_err_response, check_resource)
-from swift.common.middleware.cdmiapp.cdmicommoncontroller import \
+from cdmicommoncontroller import \
     (CDMIBaseController)
 from urllib import unquote, quote
 from webob import Request, Response
