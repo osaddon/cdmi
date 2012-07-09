@@ -16,7 +16,7 @@
 # This module defines utility methods used by both cdmi controllers and
 # none-cdmi controllers
 
-from swift.common.middleware.cdmiapp.cdmibase import Consts
+from cdmibase import Consts
 from swift.common.bufferedhttp import http_connect_raw
 from webob import Request, Response
 

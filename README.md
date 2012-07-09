@@ -11,7 +11,19 @@ Setup
 
 1. Install Openstack with Swift
 2. Install this python egg
-3. Configure Swift
+3. Configure Swift:
+
+In /etc/swift/proxy-server.conf, add cdmi filter before proxy-server
+
+[pipeline:main]
+pipeline = healthcheck cache tempauth *cdmi* proxy-server
+
+And add the following section to the file:
+
+[filter:cdmi]
+use = egg:cdmiapi#cdmiapp
+
+4. Restart Swift
 
 Development with devstack
 =========================

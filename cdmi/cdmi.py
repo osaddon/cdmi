@@ -28,15 +28,15 @@ To add this middleware to your configuration, add the cdmi middleware
 in front of the proxy-server middleware.
 """
 
-from swift.common.middleware.cdmiapp.cdmibase import \
+from cdmiapp.cdmibase import \
     (Consts, concat_parts, ErrorController, LoginController, AccountController)
-from swift.common.middleware.cdmiapp.cdmicontrollers import \
+from cdmiapp.cdmicontrollers import \
     (ContainerController,ObjectController)
-from swift.common.middleware.cdmiapp.cdmicommoncontroller import \
+from cdmiapp.cdmicommoncontroller import \
     CDMICommonController
-from swift.common.middleware.cdmiapp.noncdmicontrollers import \
+from cdmiapp.noncdmicontrollers import \
     (NonCDMIContainerController, NonCDMIObjectController)
-from swift.common.middleware.cdmiapp.cdmiutils import get_err_response
+from cdmiapp.cdmiutils import get_err_response
 from webob import Request, Response
 from urllib import unquote
 from swift.common.utils import get_logger
