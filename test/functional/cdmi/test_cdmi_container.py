@@ -15,7 +15,7 @@
 
 import unittest
 from test import get_config
-from swift.common.client import get_auth
+from swiftclient.client import get_auth
 import httplib
 import time
 import json
@@ -24,12 +24,13 @@ import json
 class TestCDMIContainer(unittest.TestCase):
     """ Test CDMI ContainerController """
     def setUp(self):
-        self.conf = get_config()
+        self.conf = get_config()['func_test']
         if self.conf.get('auth_ssl', 'no') == 'yes':
             auth_method = 'https://'
         else:
             auth_method = 'http://'
         auth_host = (self.conf.get('auth_host') + ':' +
+                    self.conf.get('auth_port'))
                      self.conf.get('auth_port'))
         auth_url = (auth_method + auth_host +
                     self.conf.get('auth_prefix') + 'v1.0')

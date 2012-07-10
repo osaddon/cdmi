@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from swift.common.middleware.cdmiapp.cdmibase import \
+from cdmibase import \
     (Consts, Controller, concat_parts)
-from swift.common.middleware.cdmiapp.cdmiutils import \
+from cdmiutils import \
     (get_pair_from_header, get_err_response, check_resource)
 from webob import Request, Response
 from swift.common.utils import get_logger
