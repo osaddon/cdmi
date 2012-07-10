@@ -1,4 +1,3 @@
-
 CDMI for OpenStack's SWIFT
 --------------------------
 
@@ -36,3 +35,10 @@ Development with devstack
 =========================
 
 Please make sure `swift` is enabled in your devstack environment file `localrc`.
+
+Some sample curl commands
+=========================
+
+    curl -v -H 'X-Storage-User: test:tester' -H 'X-Storage-Pass: testing' http://127.0.0.1:8080/auth/v1.0
+
+    curl -v -X GET -H 'X-Auth-Token: AUTH_tk56b01c82710b41328db7c9f953d3933d' http://127.0.0.1:8080/v1/AUTH_test
