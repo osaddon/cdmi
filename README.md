@@ -23,7 +23,6 @@ And add the following section to the file:
 	[filter:cdmi]
 	use = egg:cdmiapi#cdmiapp
 
-
 Running tests
 =============
 

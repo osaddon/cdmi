@@ -25,13 +25,13 @@ class TestCDMIContainer(unittest.TestCase):
     """ Test CDMI ContainerController """
     def setUp(self):
         self.conf = get_config()['func_test']
-        print 
         if self.conf.get('auth_ssl', 'no') == 'yes':
             auth_method = 'https://'
         else:
             auth_method = 'http://'
         auth_host = (self.conf.get('auth_host') + ':' +
                     self.conf.get('auth_port'))
+                     self.conf.get('auth_port'))
         auth_url = (auth_method + auth_host +
                     self.conf.get('auth_prefix') + 'v1.0')
         try:
