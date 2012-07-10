@@ -23,7 +23,15 @@ And add the following section to the file:
 	[filter:cdmi]
 	use = egg:cdmiapi#cdmiapp
 
-4. Restart Swift
+
+Running tests
+=============
+
+First copy a test config file to /etc/swift:
+
+	cp /opt/stack/swift/test/sample.conf /etc/swift/test.conf
+
+Now the test cases in the test directory can be run without problems.
 
 Development with devstack
 =========================
