@@ -42,7 +42,7 @@ class ContainerController(CDMIBaseController):
         # First check if the resource exists and if it is a directory
         path = '/' + concat_parts('v1', self.account_name, self.container_name,
                                   self.parent_name, self.object_name)
-        exists, headers, dummy = check_resource(env, 'HEAD', path,
+        exists, headers, dummy = check_resource(env, 'GET', path,
                                                 self.logger, False)
         if exists:
             content_type = headers.get('content-type', '')
@@ -118,7 +118,7 @@ class ObjectController(CDMIBaseController):
     Handles requests for create and update of objects
     """
 
-    # Use PUT to handle container update and create
+    # Use PUT to handle object update and create
     def PUT(self, env, start_response):
         """
         Handle Container update and create request
@@ -126,7 +126,7 @@ class ObjectController(CDMIBaseController):
         # First check if the resource exists and if it is a directory
         path = '/' + concat_parts('v1', self.account_name, self.container_name,
                                   self.parent_name, self.object_name)
-        exists, headers, body = check_resource(env, 'HEAD', path, self.logger,
+        exists, headers, body = check_resource(env, 'GET', path, self.logger,
                                                False, None)
         if exists:
             content_type = headers.get('content-type', '')

@@ -38,7 +38,7 @@ class NonCDMIContainerController(CDMIBaseController):
         path = '/' + concat_parts('v1', self.account_name, self.container_name,
                                   self.parent_name, self.object_name)
 
-        exists, headers, body = check_resource(env, 'HEAD', path,
+        exists, headers, body = check_resource(env, 'GET', path,
                                                self.logger, False)
 
         if exists:
@@ -70,7 +70,7 @@ class NonCDMIObjectController(CDMIBaseController):
         path = '/' + concat_parts('v1', self.account_name, self.container_name,
                                   self.parent_name, self.object_name)
 
-        exists, headers, body = check_resource(env, 'HEAD', path, self.logger,
+        exists, headers, body = check_resource(env, 'GET', path, self.logger,
                                                False, None)
 
         if exists:

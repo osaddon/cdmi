@@ -103,7 +103,7 @@ def check_resource(env, method, path, logger, get_body=False,
     headers = {}
     headers[Consts.AUTH_TOKEN] = value if value != '' else key
     headers['Accept'] = 'application/json'
-    method = 'HEAD' if not method else method
+    method = 'GET' if not method else method
     path = req.path if not path else path
     path = path.rstrip('/')
 

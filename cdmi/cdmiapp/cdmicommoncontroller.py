@@ -70,7 +70,7 @@ class CDMIBaseController(Controller):
             # Try to hit the resource url and see if it exists
             path = '/' + concat_parts('v1', self.account_name,
                                       self.container_name, self.parent_name)
-            exists, headers, dummy = check_resource(env, 'HEAD',
+            exists, headers, dummy = check_resource(env, 'GET',
                                                     path, self.logger)
             if exists:
                 content_type = str(headers.get('content-type', ''))
@@ -118,7 +118,7 @@ class CDMIBaseController(Controller):
         """
         path = env['PATH_INFO']
         res, is_container, headers, children = None, False, {}, None
-        exists, headers, dummy = check_resource(env, 'HEAD', path, self.logger)
+        exists, headers, dummy = check_resource(env, 'GET', path, self.logger)
         # If exists, we need to check if the resource is a container
         if exists:
             content_type = (headers.get('content-type') or '').lower()
