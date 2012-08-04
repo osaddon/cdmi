@@ -271,7 +271,7 @@ class CDMICommonController(CDMIBaseController):
         body['mimetype'] = headers.get('content-type', '')
         encoding = headers.get(Consts.VALUE_ENCODING, 'utf-8')
         body['valuetransferencoding'] = encoding
-        if encoding == Consts.ENCODING_BASE64:
+        if encoding.lower() == Consts.ENCODING_BASE64:
             body['value'] = base64.encodestring(object_body)
         else:
             body['value'] = object_body
