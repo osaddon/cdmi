@@ -25,6 +25,7 @@ from swift.common.utils import get_logger
 from swift.common.utils import split_path
 from swift.common.bufferedhttp import http_connect_raw
 import json
+import base64
 
 
 class ContainerController(CDMIBaseController):
@@ -183,8 +184,12 @@ class ObjectController(CDMIBaseController):
                 req.body = str(body.get('value', ''))
                 req.headers['content-type'] = body.get('mimetype',
                                                        'text/plain')
-                req.headers[Consts.VALUE_ENCODING] = \
-                    body.get('valuetransferencoding', 'utf-8')
+                encoding = body.get('valuetransferencoding', 'utf-8')
+                req.headers[Consts.VALUE_ENCODING] = encoding
+                # if the value is encoded using base64, then
+                # we need to decode it and save as binary
+                if encoding == Consts.ENCODING_BASE64:
+                    req.body = base64.decodestring(req.body)
             except KeyError:
                 return get_err_response('InvalidContent')
         else:

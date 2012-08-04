@@ -19,6 +19,7 @@ from swiftclient.client import get_auth
 import httplib
 import time
 import json
+import base64
 
 
 class TestCDMIObject(unittest.TestCase):
@@ -143,6 +144,65 @@ class TestCDMIObject(unittest.TestCase):
                              'Not objectName found which is required.')
         self.assertIsNotNone(body['objectType'],
                              'Not objectType found which is required.')
+
+    def test_handle_base64_object(self):
+        # create a new object using base64 encoded data
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('auth_port'))
+        headers = {'X-Auth-Token': self.auth_token,
+                   'X-CDMI-Specification-Version': '1.0.1',
+                   'Accept': 'application/cdmi-object',
+                   'Content-Type': 'application/cdmi-object'}
+        body = {}
+        body['metadata'] = {'key1': 'value1', 'key2': 'value2'}
+        body['mimetype'] = 'text/plain'
+        body['valuetransferencoding'] = 'base64'
+        original_value = base64.encodestring('value of the object')
+        body['value'] = original_value
+        conn.request('PUT', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_create),
+                     json.dumps(body, indent=2), headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 201,
+                         'Base64 encoded value object creation failed')
+        data = res.read()
+        try:
+            body = json.loads(data)
+        except Exception as parsing_error:
+            raise parsing_error
+        self.assertIsNotNone(body['parentURI'],
+                             'Not parentURI found which is required.')
+        self.assertIsNotNone(body['objectName'],
+                             'Not objectName found which is required.')
+        self.assertIsNotNone(body['objectType'],
+                             'Not objectType found which is required.')
+        conn.close()
+
+        # read the object just created.
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('auth_port'))
+        headers = {'X-Auth-Token': self.auth_token,
+                   'X-CDMI-Specification-Version': '1.0.1',
+                   'Accept': 'application/cdmi-object'}
+        conn.request('GET', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_create), None, headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 200,
+                         'Base64 encoded value object read failed')
+        data = res.read()
+        try:
+            body = json.loads(data)
+            encoding = body['valuetransferencoding']
+            value = body['value']
+        except Exception as parsing_error:
+            raise parsing_error
+
+        self.assertEquals(encoding, 'base64', 'Encoding is not base64')
+        self.assertEquals(value, original_value,
+                      'encoded value does not match original')
+        conn.close()
 
     def test_create_object_with_empty_body(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),

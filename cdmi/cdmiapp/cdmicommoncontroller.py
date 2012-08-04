@@ -20,6 +20,7 @@ from cdmiutils import \
 from webob import Request, Response
 from swift.common.utils import get_logger
 import json
+import base64
 
 
 class CDMIBaseController(Controller):
@@ -268,10 +269,13 @@ class CDMICommonController(CDMIBaseController):
         # Handling CDMI metadata
         body['metadata'] = self._process_metadata(headers)
         body['mimetype'] = headers.get('content-type', '')
-        body['valuetransferencoding'] = \
-            headers.get(Consts.VALUE_ENCODING, 'utf-8')
+        encoding = headers.get(Consts.VALUE_ENCODING, 'utf-8')
+        body['valuetransferencoding'] = encoding
+        if encoding == Consts.ENCODING_BASE64:
+            body['value'] = base64.encodestring(object_body)
+        else:
+            body['value'] = object_body
         body['valuerange'] = '0-' + str(len(object_body))
-        body['value'] = object_body
         res.body = json.dumps(body, indent=2)
         res.status_int = 200
 
