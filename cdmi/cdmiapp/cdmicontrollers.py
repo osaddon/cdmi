@@ -171,7 +171,8 @@ class ObjectController(CDMIBaseController):
 
             # headling copy object
             if body.get('copy'):
-                #
+                # add the copy-from header to indicate a copy operation
+                # for swift
                 req.headers['X-Copy-From'] = body.get('copy')
                 req.body = ''
             else:
@@ -185,7 +186,7 @@ class ObjectController(CDMIBaseController):
                                 key + ":" + str(metadata[key])
                 else:
                     metadata = {}
-    
+
                 try:
                     req.body = str(body.get('value', ''))
                     req.headers['content-type'] = body.get('mimetype',
