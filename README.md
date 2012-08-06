@@ -7,8 +7,10 @@ Setup
 =====
 
 1. Install [Openstack with Swift](http://docs.openstack.org/essex/openstack-object-storage/admin/content/)
-2. Install this python egg: `python setup.py install`
-3. Configure Swift:
+2. Grab the code from github:
+     `git clone http://github.com/osaddon/cdmi`
+3. Install this python egg: `sudo python setup.py install`
+4. Configure Swift:
 
 In `/etc/swift/proxy-server.conf`, add cdmi filter before proxy-server
 
