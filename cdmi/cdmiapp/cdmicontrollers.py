@@ -169,29 +169,35 @@ class ObjectController(CDMIBaseController):
             except ValueError:
                 return get_err_response('InvalidContent')
 
-            if body.get('metadata'):
-                metadata = body['metadata']
-                for key in metadata:
-                    if metadata[key] == '':
-                        req.headers[Consts.META_OBJECT_ID + key] = ''
-                    else:
-                        req.headers[Consts.META_OBJECT_ID + key] = \
-                            key + ":" + str(metadata[key])
+            # headling copy object
+            if body.get('copy'):
+                #
+                req.headers['X-Copy-From'] = body.get('copy')
+                req.body = ''
             else:
-                metadata = {}
-
-            try:
-                req.body = str(body.get('value', ''))
-                req.headers['content-type'] = body.get('mimetype',
-                                                       'text/plain').lower()
-                encoding = body.get('valuetransferencoding', 'utf-8')
-                req.headers[Consts.VALUE_ENCODING] = encoding
-                # if the value is encoded using base64, then
-                # we need to decode it and save as binary
-                if encoding == Consts.ENCODING_BASE64:
-                    req.body = base64.decodestring(req.body)
-            except KeyError:
-                return get_err_response('InvalidContent')
+                if body.get('metadata'):
+                    metadata = body['metadata']
+                    for key in metadata:
+                        if metadata[key] == '':
+                            req.headers[Consts.META_OBJECT_ID + key] = ''
+                        else:
+                            req.headers[Consts.META_OBJECT_ID + key] = \
+                                key + ":" + str(metadata[key])
+                else:
+                    metadata = {}
+    
+                try:
+                    req.body = str(body.get('value', ''))
+                    req.headers['content-type'] = body.get('mimetype',
+                        'text/plain').lower()
+                    encoding = body.get('valuetransferencoding', 'utf-8')
+                    req.headers[Consts.VALUE_ENCODING] = encoding
+                    # if the value is encoded using base64, then
+                    # we need to decode it and save as binary
+                    if encoding == Consts.ENCODING_BASE64:
+                        req.body = base64.decodestring(req.body)
+                except KeyError:
+                    return get_err_response('InvalidContent')
         else:
             req.headers['content-length'] = '0'
 

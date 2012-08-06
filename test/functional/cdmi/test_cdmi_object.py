@@ -55,6 +55,7 @@ class TestCDMIObject(unittest.TestCase):
             self.top_container = 'cdmi_test_top_container_' + suffix
             self.child_container = 'cdmi_test_child_container_' + suffix
             self.object_create = 'cdmi_test_object_create_' + suffix
+            self.object_copy = 'cdmi_test_object_copy_' + suffix
             self.object_test = 'cdmi_test_object_' + suffix
 
             #Create test containers
@@ -79,6 +80,9 @@ class TestCDMIObject(unittest.TestCase):
         self.__delete_test_entity(self.top_container + '/' +
                                   self.child_container + '/' +
                                   self.object_create)
+        self.__delete_test_entity(self.top_container + '/' +
+                                  self.child_container + '/' +
+                                  self.object_copy)
         self.__delete_test_entity(self.top_container + '/' +
                                   self.child_container)
         self.__delete_test_entity(self.top_container + '/a/b/c/real_object')
@@ -144,6 +148,82 @@ class TestCDMIObject(unittest.TestCase):
                              'Not objectName found which is required.')
         self.assertIsNotNone(body['objectType'],
                              'Not objectType found which is required.')
+
+    def test_copy_object_same_dir(self):
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('auth_port'))
+        headers = {'X-Auth-Token': self.auth_token,
+                   'X-CDMI-Specification-Version': '1.0.1',
+                   'Accept': 'application/cdmi-object',
+                   'Content-Type': 'application/cdmi-object'}
+        body = {}
+        body['copy'] = '/'.join(['', self.top_container, self.child_container,
+                                self.object_test])
+        conn.request('PUT', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_copy),
+                     json.dumps(body, indent=2), headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 201, 'Object copy failed')
+        data = res.read()
+        try:
+            body = json.loads(data)
+        except Exception as parsing_error:
+            raise parsing_error
+        self.assertIsNotNone(body['parentURI'],
+                             'Not parentURI found which is required.')
+        self.assertIsNotNone(body['objectName'],
+                             'Not objectName found which is required.')
+        self.assertIsNotNone(body['objectType'],
+                             'Not objectType found which is required.')
+
+    def test_copy_object_different_dir(self):
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('auth_port'))
+        headers = {'X-Auth-Token': self.auth_token,
+                   'X-CDMI-Specification-Version': '1.0.1',
+                   'Accept': 'application/cdmi-object',
+                   'Content-Type': 'application/cdmi-object'}
+        body = {}
+        body['copy'] = '/'.join(['', self.top_container, 'a/b/cc'])
+
+        print body['copy']
+        conn.request('PUT', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_copy),
+                     json.dumps(body, indent=2), headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 201, 'Object copy failed')
+        data = res.read()
+        try:
+            body = json.loads(data)
+        except Exception as parsing_error:
+            raise parsing_error
+        self.assertIsNotNone(body['parentURI'],
+                             'Not parentURI found which is required.')
+        self.assertIsNotNone(body['objectName'],
+                             'Not objectName found which is required.')
+        self.assertIsNotNone(body['objectType'],
+                             'Not objectType found which is required.')
+
+    def test_copy_object_non_exist(self):
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('auth_port'))
+        headers = {'X-Auth-Token': self.auth_token,
+                   'X-CDMI-Specification-Version': '1.0.1',
+                   'Accept': 'application/cdmi-object',
+                   'Content-Type': 'application/cdmi-object'}
+        body = {}
+        body['copy'] = '/'.join(['', self.top_container, 'a/b/non_exist'])
+
+        print body['copy']
+        conn.request('PUT', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_copy),
+                     json.dumps(body, indent=2), headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 404,
+                         'Non exist object copy should have failed')
 
     def test_handle_base64_object(self):
         # create a new object using base64 encoded data
