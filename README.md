@@ -58,4 +58,3 @@ Query the capabilites of a Container:
 Add an Object to a Container:
 
     curl -v -X PUT -H 'X-Auth-Token: AUTH_tk56b01c82710b41328db7c9f953d3933d' -H 'X-CDMI-Specification-Version: 1.0.1' -H 'Accept: application/cdmi-object' -H 'Content-Type: application/cdmi-object' http://127.0.0.1:8080/v1/AUTH_test/<container_name>/<object_name> -d '<Some JSON>'
-    
