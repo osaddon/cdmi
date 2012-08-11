@@ -190,14 +190,14 @@ class CDMIBaseController(Controller):
                 message = email.message_from_file(req.body_file)
                 for i, part in enumerate(message.walk()):
                     if i > 0:
-                         content_type = part.get_content_type() or ''
-                         if (content_type.find('cdmi-object') > 0 and
-                                is_cdmi_type):
-                             payload = part.get_payload(decode=True)
-                             body.update(json.loads(payload))
-                         else:
-                             body['value'] = part.get_payload(decode=True)
-                             body['mimetype'] = content_type
+                        content_type = part.get_content_type() or ''
+                        if (content_type.find('cdmi-object') > 0 and
+                            is_cdmi_type):
+                            payload = part.get_payload(decode=True)
+                            body.update(json.loads(payload))
+                        else:
+                            body['value'] = part.get_payload(decode=True)
+                            body['mimetype'] = content_type
             except Exception as ex:
                 raise ex
         # not multipart
@@ -209,6 +209,7 @@ class CDMIBaseController(Controller):
             body['mimetype'] = content_type
 
         return body
+
 
 class CDMICommonController(CDMIBaseController):
     """
