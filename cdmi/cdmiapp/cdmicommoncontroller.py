@@ -21,6 +21,8 @@ from webob import Request, Response
 from swift.common.utils import get_logger
 import json
 import base64
+import email
+import mimetypes
 
 
 class CDMIBaseController(Controller):
@@ -168,10 +170,45 @@ class CDMIBaseController(Controller):
             else:
                 res = get_err_response('NoSuchKey')
 
-        self.logger.info('is_container=' + str(is_container))
-        self.logger.info(res)
         return res, is_container, headers, children
 
+    def _handle_body(self, env, is_cdmi_type=False):
+        '''
+        this method will parse the multipart message and return one object
+           body = {'value': 'some value', 'mimetype': content_type}
+        if the request body is not multipart, then for cdmi content request
+        this method will parse the body as json. for non cdmi content request
+        this method will simply make a body object with the value being
+        the request body and the mimetype being the content type
+        '''
+        body = {}
+        req = Request(env)
+        content_type = (req.headers['Content-Type'] or '').lower()
+        # multipart
+        if content_type.find('multipart/mixed') >= 0:
+            try:
+                message = email.message_from_file(req.body_file)
+                for i, part in enumerate(message.walk()):
+                    if i > 0:
+                         content_type = part.get_content_type() or ''
+                         if (content_type.find('cdmi-object') > 0 and
+                                is_cdmi_type):
+                             payload = part.get_payload(decode=True)
+                             body.update(json.loads(payload))
+                         else:
+                             body['value'] = part.get_payload(decode=True)
+                             body['mimetype'] = content_type
+            except Exception as ex:
+                raise ex
+        # not multipart
+        elif is_cdmi_type:
+            body = json.loads(req.body)
+            body['mimetype'] = body.get('mimetype', content_type)
+        else:
+            body['value'] = req.body
+            body['mimetype'] = content_type
+
+        return body
 
 class CDMICommonController(CDMIBaseController):
     """

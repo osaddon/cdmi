@@ -56,6 +56,8 @@ def get_err_response(code):
             (400, 'The storage state is inconsistant.'),
         'VersionNotSupported':
             (400, 'Requested cdmi version is not supported.'),
+        'InvalidBody':
+            (400, 'MIME message or the request body can not be parsed.'),
         'NoSuchContainer':
             (404, 'The specified container does not exist'),
         'ResourceIsNotObject':
@@ -107,6 +109,8 @@ def check_resource(env, method, path, logger, get_body=False,
     path = req.path if not path else path
     path = path.rstrip('/')
 
+    print 'the path is ', path
+    print 'the query string is ', query_string
     conn = http_connect_raw(req.server_name, req.server_port, method, path,
                             headers, query_string, ssl)
     res = conn.getresponse()
@@ -119,6 +123,7 @@ def check_resource(env, method, path, logger, get_body=False,
         header_list = res.getheaders()
         for header in header_list:
             values[header[0]] = header[1]
+            print 'check resource header ', header[0], header[1]
         if get_body:
             length = res.getheader('content-length')
             if length:

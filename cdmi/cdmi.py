@@ -77,8 +77,8 @@ class CdmiMiddleware(object):
             content_is_container = \
                 content_type.find('application/cdmi-container') >= 0 or False
 
-            content_is_object = \
-                content_type.find('application/cdmi-object') >= 0 or False
+            content_is_object = (content_type.find('multipart/mixed') >= 0 or
+                content_type.find('application/cdmi-object') >= 0 or False)
 
             accept_is_container = \
                 accept.find('application/cdmi-container') >= 0 or False

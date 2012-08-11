@@ -16,10 +16,14 @@
 import unittest
 from test import get_config
 from swiftclient.client import get_auth
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+from email.MIMEBase import MIMEBase
 import httplib
 import time
 import json
 import base64
+import os
 
 
 class TestCDMIObject(unittest.TestCase):
@@ -149,6 +153,103 @@ class TestCDMIObject(unittest.TestCase):
         self.assertIsNotNone(body['objectType'],
                              'Not objectType found which is required.')
 
+    def test_create_object_cdmi_multipart(self):
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('auth_port'))
+        headers = {'X-Auth-Token': self.auth_token,
+                   'X-CDMI-Specification-Version': '1.0.1',
+                   'Accept': 'application/cdmi-object',
+                   'Content-Type': 'multipart/mixed'}
+        msg = MIMEMultipart()
+        # create the first part which contains cdmi json metadata
+        body = {}
+        body['metadata'] = {'key1': 'value1', 'key2': 'value2'}
+        part = MIMEBase('application', 'cdmi-object')
+        part.set_payload(json.dumps(body, indent=2))
+        msg.attach(part)
+        # add an image as an attachment
+        path = os.path.dirname(__file__)
+        fp = open('/'.join([path, 'desert.jpg']), 'rb')
+        part = MIMEImage(fp.read())
+        msg.attach(part)
+        conn.request('PUT', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_create),
+                     msg.as_string(), headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 201, 'Multipart Object creation failed')
+        data = res.read()
+        try:
+            body = json.loads(data)
+        except Exception as parsing_error:
+            raise parsing_error
+        self.assertIsNotNone(body['parentURI'],
+                             'Not parentURI found which is required.')
+        self.assertIsNotNone(body['objectName'],
+                             'Not objectName found which is required.')
+        self.assertIsNotNone(body['objectType'],
+                             'Not objectType found which is required.')
+        conn.close()
+
+        # now read the object and make sure everything is correct.
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('auth_port'))
+        headers = {'X-Auth-Token': self.auth_token}
+        conn.request('GET', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_create), None, headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 200, 'Object read failed')
+        self.assertEquals('image/jpeg', res.getheader('content-type', ''),
+                          'The content type should be image/jpeg')
+        conn.close()
+
+    def test_create_object_non_cdmi_multipart(self):
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('auth_port'))
+        headers = {'X-Auth-Token': self.auth_token,
+                   'Content-Type': 'multipart/mixed'}
+        msg = MIMEMultipart()
+        # add an image as an attachment
+        path = os.path.dirname(__file__)
+        fp = open('/'.join([path, 'desert.jpg']), 'rb')
+        part = MIMEImage(fp.read())
+        msg.attach(part)
+        conn.request('PUT', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_create),
+                     msg.as_string(), headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 201, 'Multipart Object creation failed')
+
+        conn.close()
+        # now read the object and make sure everything is correct.
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('auth_port'))
+        headers = {'X-Auth-Token': self.auth_token,
+                   'X-CDMI-Specification-Version': '1.0.1',
+                   'Accept': 'application/cdmi-object'}
+        conn.request('GET', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_create), None, headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 200,
+                         'Read multipart uploaded object failed')
+        data = res.read()
+        try:
+            body = json.loads(data)
+        except Exception as parsing_error:
+            raise parsing_error
+        self.assertIsNotNone(body['parentURI'],
+                             'Not parentURI found which is required.')
+        self.assertIsNotNone(body['objectName'],
+                             'Not objectName found which is required.')
+        self.assertIsNotNone(body['objectType'],
+                             'Not objectType found which is required.')
+        self.assertEquals('image/jpeg', body['mimetype'],
+                          'The mime type should be image/jpeg')
+        conn.close()
+
     def test_copy_object_same_dir(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
                                       self.conf.get('auth_port'))
@@ -187,7 +288,6 @@ class TestCDMIObject(unittest.TestCase):
         body = {}
         body['copy'] = '/'.join(['', self.top_container, 'a/b/cc'])
 
-        print body['copy']
         conn.request('PUT', (self.access_root + '/' + self.top_container +
                              '/' + self.child_container + '/' +
                              self.object_copy),
@@ -216,7 +316,6 @@ class TestCDMIObject(unittest.TestCase):
         body = {}
         body['copy'] = '/'.join(['', self.top_container, 'a/b/non_exist'])
 
-        print body['copy']
         conn.request('PUT', (self.access_root + '/' + self.top_container +
                              '/' + self.child_container + '/' +
                              self.object_copy),

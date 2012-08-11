@@ -106,10 +106,14 @@ class NonCDMIObjectController(CDMIBaseController):
         if res:
             return res
 
-        # Create a new WebOb Request object according to the current request
-        req = Request(env)
-
-        if not req.body or len(req.body) == 0:
-            req.headers['content-length'] = '0'
-        res = req.get_response(self.app)
-        return res
+        try:
+            body = self._handle_body(env, False)
+        except Exception as ex:
+            return get_err_response('InvalidBody')
+        else:
+            env['CONTENT_TYPE'] = body.get('mimetype', 'text/plain')
+            req = Request(env)
+            req.body = body.get('value', '')
+            req.headers['content-length'] = len(req.body)
+            res = req.get_response(self.app)
+            return res

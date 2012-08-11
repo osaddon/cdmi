@@ -41,6 +41,7 @@ class Consts(object):
     META_OBJECT_ID = 'x-object-meta-cdmi-'
     VALUE_ENCODING = 'x-object-meta-valuetransferencoding'
     ENCODING_BASE64 = 'base64'
+    MULTIPART_TYPE = 'multipart/mixed'
 
 
 class Controller(object):

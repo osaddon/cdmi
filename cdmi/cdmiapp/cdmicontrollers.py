@@ -165,10 +165,13 @@ class ObjectController(CDMIBaseController):
         metadata = {}
         if req.body:
             try:
-                body = json.loads(req.body)
-            except ValueError:
-                return get_err_response('InvalidContent')
+                body = self._handle_body(env, True)
+            except Exception:
+                return get_err_response('InvalidBody')
 
+            print 'TONGLI'
+            print __file__
+            print body
             # headling copy object
             if body.get('copy'):
                 # add the copy-from header to indicate a copy operation
