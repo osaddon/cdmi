@@ -160,6 +160,12 @@ class ObjectController(CDMIBaseController):
             return res
 
         # Create a new WebOb Request object according to the current request
+        #if we found X-Object-UploadID in the header, we need know that
+        #the request is uploading a piece of a large object, the piece
+        #will need to go to the segments folder
+
+        self._handle_part(env)
+
         req = Request(env)
 
         metadata = {}
@@ -169,9 +175,6 @@ class ObjectController(CDMIBaseController):
             except Exception:
                 return get_err_response('InvalidBody')
 
-            print 'TONGLI'
-            print __file__
-            print body
             # headling copy object
             if body.get('copy'):
                 # add the copy-from header to indicate a copy operation
@@ -219,7 +222,10 @@ class ObjectController(CDMIBaseController):
             body['parentURI'] = concat_parts(self.account_name,
                                              self.container_name,
                                              self.parent_name) + '/'
-            body['completionStatus'] = 'Complete'
+            if env.get('HTTP_X_USE_EXTRA_REQUEST'):
+                extra_res = self._put_manifest(env)
+                res.status_int = extra_res.status
+
             body['metadata'] = metadata
             res.body = json.dumps(body, indent=2)
         # Otherwise, no response body should be returned.

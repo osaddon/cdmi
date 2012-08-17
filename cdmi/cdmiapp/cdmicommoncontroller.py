@@ -16,7 +16,7 @@
 from cdmibase import \
     (Consts, Controller, concat_parts)
 from cdmiutils import \
-    (get_pair_from_header, get_err_response, check_resource)
+    (get_pair_from_header, get_err_response, check_resource, send_manifest)
 from webob import Request, Response
 from swift.common.utils import get_logger
 import json
@@ -209,6 +209,77 @@ class CDMIBaseController(Controller):
             body['mimetype'] = content_type
 
         return body
+
+    def _handle_part(self, env):
+        '''
+        This method will inspect if the request is part of a series of
+        a large data object upload. inspect the headers such as
+        X-Object-UploadID, X-CDMI-Partial, Content-Range
+        '''
+        try:
+            upload_id = env.get('HTTP_X_OBJECT_UPLOADID')
+            cdmi_partial = (env.get('HTTP_X_CDMI_PARTIAL') or '').lower()
+            content_range = (env.get('HTTP_CONTENT_RANGE') or '').lower()
+            print upload_id, cdmi_partial, content_range
+            if upload_id and cdmi_partial:
+                start, end = self._get_range(content_range)
+                if start and (cdmi_partial.find('true') >= 0 or
+                              cdmi_partial.find('false') >= 0):
+                    new_name = self.object_name + '_segments/'
+                    new_name += '/' + upload_id + '/' + start
+                    new_name += '-' + end if end else ''
+                    env['PATH_INFO'] = \
+                        '/v1/' + concat_parts(self.account_name,
+                                              self.container_name,
+                                              self.parent_name, new_name)
+                    env['HTTP_X_USE_EXTRA_REQUEST'] = 'true'
+
+                if cdmi_partial == 'false':
+                    new_name = self.object_name + '_segments/' + upload_id
+                    new_name += '/'
+                    env['HTTP_X_OBJECT_MANIFEST'] = \
+                        concat_parts(self.container_name,
+                                     self.parent_name, new_name)
+
+        except Exception as ex:
+            raise ex
+
+    def _put_manifest(self, env):
+        '''
+        This method will send the manifest request
+        '''
+        if env.get('HTTP_X_OBJECT_MANIFEST'):
+            path = '/v1/' + concat_parts(self.account_name,
+                                        self.container_name,
+                                        self.parent_name,
+                                        self.object_name)
+            extra_headers = {}
+            extra_headers['HTTP_X_OBJECT_MANIFEST'] = \
+                env.get('HTTP_X_OBJECT_MANIFEST')
+            return send_manifest(env, 'PUT', path, self.logger, extra_header)
+
+    def _get_range(self, header_value, valid_units=('bytes','none')):
+        """Parses the value of an HTTP Range: header.
+        The value of the header as a string should be passed in; without
+        the header name itself.
+        Returns a range object.
+        """
+        if header_value and len(header_value.strip()) > 0:
+            parts = header_value.split('=')
+            if parts[0] != 'bytes' or len(parts) != 2:
+                raise Exception('Invalid Range')
+            # further split and get the range
+            parts = parts[1].split('-')
+            if len(parts) < 1 or len(parts) > 2:
+                raise Excetpion('Wrong range')
+            start = '%020d' % int(parts[0])
+            if len(parts) == 2:
+                end = '%020d' % int(parts[1])
+            else:
+                end = None
+            return start, end
+        else:
+            return None, None
 
 
 class CDMICommonController(CDMIBaseController):

@@ -106,6 +106,8 @@ class NonCDMIObjectController(CDMIBaseController):
         if res:
             return res
 
+        self._handle_part(env)
+
         try:
             body = self._handle_body(env, False)
         except Exception as ex:
@@ -116,4 +118,7 @@ class NonCDMIObjectController(CDMIBaseController):
             req.body = body.get('value', '')
             req.headers['content-length'] = len(req.body)
             res = req.get_response(self.app)
+            if (res.status_int in [201, 204] and
+                env.get('HTTP_X_USE_EXTRA_REQUEST')):
+                res = self._put_manifest(env)
             return res

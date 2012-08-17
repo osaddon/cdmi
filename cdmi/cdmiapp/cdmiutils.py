@@ -109,8 +109,6 @@ def check_resource(env, method, path, logger, get_body=False,
     path = req.path if not path else path
     path = path.rstrip('/')
 
-    print 'the path is ', path
-    print 'the query string is ', query_string
     conn = http_connect_raw(req.server_name, req.server_port, method, path,
                             headers, query_string, ssl)
     res = conn.getresponse()
@@ -123,7 +121,6 @@ def check_resource(env, method, path, logger, get_body=False,
         header_list = res.getheaders()
         for header in header_list:
             values[header[0]] = header[1]
-            print 'check resource header ', header[0], header[1]
         if get_body:
             length = res.getheader('content-length')
             if length:
@@ -141,3 +138,28 @@ def check_resource(env, method, path, logger, get_body=False,
             values[header[0]] = header[1]
         conn.close()
         return True, values, None
+
+def send_manifest(env, method, path, logger, extra_header, get_body=False,
+                   query_string=None):
+    """
+    Use this method to send header against a resource already exist.
+    """
+
+    # Create a new Request
+    req = Request(env)
+    ssl = True if req.scheme.lower() == 'https' else False
+
+    # Fixup the auth token, for some reason, the auth token padded the user
+    # account at the front with a comma. We need to get rid of it, otherwise,
+    # the auth token will be considered invalid.
+    key, sep, value = req.headers[Consts.AUTH_TOKEN].partition(',')
+    headers = {}
+    headers[Consts.AUTH_TOKEN] = value if value != '' else key
+    extra_header.update(headers)
+    path = path.rstrip('/')
+
+    conn = http_connect_raw(req.server_name, req.server_port, method, path,
+                            extra_headers, query_string, ssl)
+    res = conn.getresponse()
+
+    return res
