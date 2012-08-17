@@ -216,6 +216,8 @@ class CDMIBaseController(Controller):
         a large data object upload. inspect the headers such as
         X-Object-UploadID, X-CDMI-Partial, Content-Range
         '''
+        
+        print 'CONTENT_LENGTH is ', env.get('CONTENT_LENGTH')
         try:
             upload_id = env.get('HTTP_X_OBJECT_UPLOADID')
             cdmi_partial = (env.get('HTTP_X_CDMI_PARTIAL') or '').lower()
@@ -226,7 +228,7 @@ class CDMIBaseController(Controller):
                 if start and (cdmi_partial.find('true') >= 0 or
                               cdmi_partial.find('false') >= 0):
                     new_name = self.object_name + '_segments/'
-                    new_name += '/' + upload_id + '/' + start
+                    new_name += upload_id + '/' + start
                     new_name += '-' + end if end else ''
                     env['PATH_INFO'] = \
                         '/v1/' + concat_parts(self.account_name,
@@ -253,8 +255,8 @@ class CDMIBaseController(Controller):
                                         self.container_name,
                                         self.parent_name,
                                         self.object_name)
-            extra_headers = {}
-            extra_headers['HTTP_X_OBJECT_MANIFEST'] = \
+            extra_header = {}
+            extra_header['X-OBJECT-MANIFEST'] = \
                 env.get('HTTP_X_OBJECT_MANIFEST')
             return send_manifest(env, 'PUT', path, self.logger, extra_header)
 

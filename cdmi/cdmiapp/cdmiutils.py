@@ -17,9 +17,10 @@
 # none-cdmi controllers
 
 from cdmibase import Consts
-from swift.common.bufferedhttp import http_connect_raw
+from swift.common.bufferedhttp import http_connect_raw, BufferedHTTPConnection
 from webob import Request, Response
 
+from eventlet.green.httplib import HTTPConnection
 
 def get_err_response(code):
     """
@@ -155,11 +156,19 @@ def send_manifest(env, method, path, logger, extra_header, get_body=False,
     key, sep, value = req.headers[Consts.AUTH_TOKEN].partition(',')
     headers = {}
     headers[Consts.AUTH_TOKEN] = value if value != '' else key
+    headers['Content-Length'] = '0'
     extra_header.update(headers)
     path = path.rstrip('/')
 
-    conn = http_connect_raw(req.server_name, req.server_port, method, path,
-                            extra_headers, query_string, ssl)
+    if ssl:
+        conn = HTTPSConnection('%s:%s' % (req.server_name,
+                                          req.server_portport))
+    else:
+        conn = BufferedHTTPConnection('%s:%s' % (req.server_name,
+                                                 req.server_port))
+
+    conn.request('PUT', path, '', extra_header)
+
     res = conn.getresponse()
 
     return res

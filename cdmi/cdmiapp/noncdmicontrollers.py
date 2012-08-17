@@ -120,5 +120,6 @@ class NonCDMIObjectController(CDMIBaseController):
             res = req.get_response(self.app)
             if (res.status_int in [201, 204] and
                 env.get('HTTP_X_USE_EXTRA_REQUEST')):
-                res = self._put_manifest(env)
+                extra_res = self._put_manifest(env)
+                res.status_int = extra_res.status
             return res
