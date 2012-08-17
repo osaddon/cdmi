@@ -22,6 +22,7 @@ from webob import Request, Response
 
 from eventlet.green.httplib import HTTPConnection
 
+
 def get_err_response(code):
     """
     Given an HTTP response code, create a properly formatted error response
@@ -139,6 +140,7 @@ def check_resource(env, method, path, logger, get_body=False,
             values[header[0]] = header[1]
         conn.close()
         return True, values, None
+
 
 def send_manifest(env, method, path, logger, extra_header, get_body=False,
                    query_string=None):

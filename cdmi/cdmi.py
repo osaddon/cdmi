@@ -31,7 +31,7 @@ in front of the proxy-server middleware.
 from cdmiapp.cdmibase import \
     (Consts, concat_parts, ErrorController, LoginController, AccountController)
 from cdmiapp.cdmicontrollers import \
-    (ContainerController,ObjectController)
+    (ContainerController, ObjectController)
 from cdmiapp.cdmicommoncontroller import \
     CDMICommonController
 from cdmiapp.noncdmicontrollers import \

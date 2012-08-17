@@ -216,13 +216,11 @@ class CDMIBaseController(Controller):
         a large data object upload. inspect the headers such as
         X-Object-UploadID, X-CDMI-Partial, Content-Range
         '''
-        
-        print 'CONTENT_LENGTH is ', env.get('CONTENT_LENGTH')
+
         try:
             upload_id = env.get('HTTP_X_OBJECT_UPLOADID')
             cdmi_partial = (env.get('HTTP_X_CDMI_PARTIAL') or '').lower()
             content_range = (env.get('HTTP_CONTENT_RANGE') or '').lower()
-            print upload_id, cdmi_partial, content_range
             if upload_id and cdmi_partial:
                 start, end = self._get_range(content_range)
                 if start and (cdmi_partial.find('true') >= 0 or
@@ -260,7 +258,7 @@ class CDMIBaseController(Controller):
                 env.get('HTTP_X_OBJECT_MANIFEST')
             return send_manifest(env, 'PUT', path, self.logger, extra_header)
 
-    def _get_range(self, header_value, valid_units=('bytes','none')):
+    def _get_range(self, header_value, valid_units=('bytes', 'none')):
         """Parses the value of an HTTP Range: header.
         The value of the header as a string should be passed in; without
         the header name itself.
