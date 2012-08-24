@@ -1,5 +1,6 @@
 from cdmi import CdmiMiddleware
 
+
 def filter_factory(global_conf, **local_conf):
     """Standard filter factory to use the middleware with paste.deploy"""
 
