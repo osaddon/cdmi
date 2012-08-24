@@ -164,7 +164,10 @@ class ObjectController(CDMIBaseController):
         #the request is uploading a piece of a large object, the piece
         #will need to go to the segments folder
 
-        self._handle_part(env)
+        try:
+            self._handle_part(env)
+        except Exception as ex:
+            return get_err_response(ex.message)
 
         req = Request(env)
 

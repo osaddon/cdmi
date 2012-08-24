@@ -218,13 +218,12 @@ class CDMIBaseController(Controller):
         '''
 
         try:
-            upload_id = env.get('HTTP_X_OBJECT_UPLOADID')
+            upload_id = env.get('HTTP_X_CDMI_UPLOADID')
             cdmi_partial = (env.get('HTTP_X_CDMI_PARTIAL') or '').lower()
             content_range = (env.get('HTTP_CONTENT_RANGE') or '').lower()
             if upload_id and cdmi_partial:
                 start, end = self._get_range(content_range)
-                if start and (cdmi_partial.find('true') >= 0 or
-                              cdmi_partial.find('false') >= 0):
+                if start:
                     new_name = self.object_name + '_segments/'
                     new_name += upload_id + '/' + start
                     new_name += '-' + end if end else ''
@@ -232,14 +231,17 @@ class CDMIBaseController(Controller):
                         '/v1/' + concat_parts(self.account_name,
                                               self.container_name,
                                               self.parent_name, new_name)
-                    env['HTTP_X_USE_EXTRA_REQUEST'] = 'true'
 
-                if cdmi_partial == 'false':
+                if cdmi_partial.find('false') >= 0:
                     new_name = self.object_name + '_segments/' + upload_id
                     new_name += '/'
                     env['HTTP_X_OBJECT_MANIFEST'] = \
                         concat_parts(self.container_name,
                                      self.parent_name, new_name)
+                    #only when there is a content and cdmi_partial is false
+                    #two requests are needed
+                    if start:
+                        env['HTTP_X_USE_EXTRA_REQUEST'] = 'true'
 
         except Exception as ex:
             raise ex
@@ -267,11 +269,11 @@ class CDMIBaseController(Controller):
         if header_value and len(header_value.strip()) > 0:
             parts = header_value.split('=')
             if parts[0] != 'bytes' or len(parts) != 2:
-                raise Exception('Invalid Range')
+                raise Exception('InvalidRange')
             # further split and get the range
             parts = parts[1].split('-')
             if len(parts) < 1 or len(parts) > 2:
-                raise Excetpion('Wrong range')
+                raise Excetpion('InvalidRange')
             start = '%020d' % int(parts[0])
             if len(parts) == 2:
                 end = '%020d' % int(parts[1])

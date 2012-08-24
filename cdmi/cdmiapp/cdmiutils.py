@@ -58,6 +58,8 @@ def get_err_response(code):
             (400, 'The storage state is inconsistant.'),
         'VersionNotSupported':
             (400, 'Requested cdmi version is not supported.'),
+        'InvalidRange':
+            (400, 'Requested Range is not valid.'),
         'InvalidBody':
             (400, 'MIME message or the request body can not be parsed.'),
         'NoSuchContainer':
@@ -72,8 +74,12 @@ def get_err_response(code):
             (409, 'The requested name already exists as a different type')}
 
     resp = Response()
-    resp.status = error_table[code][0]
-    resp.body = error_table[code][1]
+    if error_table.get(code):
+        resp.status = error_table[code][0]
+        resp.body = error_table[code][1]
+    else:
+        resp.status = 400
+        resp.body = 'Unknown Error'
     return resp
 
 

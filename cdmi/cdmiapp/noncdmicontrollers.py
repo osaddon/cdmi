@@ -106,7 +106,10 @@ class NonCDMIObjectController(CDMIBaseController):
         if res:
             return res
 
-        self._handle_part(env)
+        try:
+            self._handle_part(env)
+        except Exception as ex:
+            return get_err_response(ex.message)
 
         try:
             body = self._handle_body(env, False)

@@ -162,8 +162,6 @@ class AccountController(Controller):
         # Create a new WebOb Request object according to the current request
         req = Request(env)
         # if cdmi content, then we return response in cdmi format
-        self.logger.info("account")
-        self.logger.info(req.headers.get(Consts.CDMI_VERSION, False))
         if req.headers.get(Consts.CDMI_VERSION, False):
             accept_header = req.headers.get('accept', '')
             if accept_header.find(Consts.CDMI_APP_CAPABILITY) >= 0:
