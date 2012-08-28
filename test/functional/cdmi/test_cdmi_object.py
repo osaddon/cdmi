@@ -169,7 +169,10 @@ class TestCDMIObject(unittest.TestCase):
         msg.attach(part)
         # add an image as an attachment
         path = os.path.dirname(__file__)
-        fp = open('/'.join([path, 'desert.jpg']), 'rb')
+        if path:
+            fp = open(os.sep.join([path, 'desert.jpg']), 'rb')
+        else:
+            fp = open('desert.jpg', 'rb')
         part = MIMEImage(fp.read())
         msg.attach(part)
         conn.request('PUT', (self.access_root + '/' + self.top_container +
@@ -212,7 +215,10 @@ class TestCDMIObject(unittest.TestCase):
         msg = MIMEMultipart()
         # add an image as an attachment
         path = os.path.dirname(__file__)
-        fp = open('/'.join([path, 'desert.jpg']), 'rb')
+        if path:
+            fp = open(os.sep.join([path, 'desert.jpg']), 'rb')
+        else:
+            fp = open('desert.jpg', 'rb')
         part = MIMEImage(fp.read())
         msg.attach(part)
         conn.request('PUT', (self.access_root + '/' + self.top_container +
