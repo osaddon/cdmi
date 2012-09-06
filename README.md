@@ -39,22 +39,39 @@ Please make sure `swift` is enabled in your devstack environment file `localrc`.
 Some sample curl commands
 =========================
 
-Authenticate:
+Authenticate and get an auth token (Swift All-in-one environment):
 
     curl -v -H 'X-Storage-User: test:tester' -H 'X-Storage-Pass: testing' http://127.0.0.1:8080/auth/v1.0
 
-Use the Authentication token and URL which is in the response from the last curl command to perform an *GET* operation:
+Authenticate and get an auth token (DevStack or Keystone 2.0):
 
-    curl -v -X GET -H 'X-Auth-Token: AUTH_tk56b01c82710b41328db7c9f953d3933d' http://127.0.0.1:8080/v1/AUTH_test
+    curl -d '{"auth": {"passwordCredentials": {"username": "<<your name>>",
+    "password": "<<your password>>"}, "tenantName":"<<your tenant name>>"}}'
+    -H "Content-Type: application/json" http://127.0.0.1:5000/v2.0/tokens
 
-Create a Container:
+Use the Authentication token and URL which is in the response from the last
+curl command to perform an *GET* operation:
 
-    curl -v -X PUT -H 'X-Auth-Token: AUTH_tk56b01c82710b41328db7c9f953d3933d' -H 'Content-tType: application/directory'-H 'Content-Length: 0' http://127.0.0.1:8080/v1/AUTH_test/<container_name>
+    curl -v -X GET -H 'X-Auth-Token: AUTH_tk56b01c82710b41328db7c9f953d3933d'
+    http://127.0.0.1:8080/v1/AUTH_test
+
+Create a Container: (replace the auth token with the token obtained above,
+also replace the root container)
+
+    curl -v -X PUT -H 'X-Auth-Token: <<your token>>'
+    -H 'Content-tType: application/directory'-H 'Content-Length: 0'
+    http://127.0.0.1:8080/v1/<root container>/<container_name>
 
 Query the capabilites of a Container:
 
-    curl -v -X GET -H 'X-Auth-Token: AUTH_tk56b01c82710b41328db7c9f953d3933d' -H 'X-CDMI-Specification-Version: 1.0.1' http://127.0.0.1:8080/cdmi/cdmi_capabilities/AUTH_test/<container_name>
+    curl -v -X GET -H 'X-Auth-Token: <<your token>>'
+    -H 'X-CDMI-Specification-Version: 1.0.1'
+    http://127.0.0.1:8080/cdmi/cdmi_capabilities/<root container>/<container_name>
 
 Add an Object to a Container:
 
-    curl -v -X PUT -H 'X-Auth-Token: AUTH_tk56b01c82710b41328db7c9f953d3933d' -H 'X-CDMI-Specification-Version: 1.0.1' -H 'Accept: application/cdmi-object' -H 'Content-Type: application/cdmi-object' http://127.0.0.1:8080/v1/AUTH_test/<container_name>/<object_name> -d '<Some JSON>'
+    curl -v -X PUT -H 'X-Auth-Token: <<your token>>'
+    -H 'X-CDMI-Specification-Version: 1.0.1'
+    -H 'Accept: application/cdmi-object'
+    -H 'Content-Type: application/cdmi-object'
+    http://127.0.0.1:8080/v1/<root container>/<container_name>/<object_name> -d '<Some JSON>'
