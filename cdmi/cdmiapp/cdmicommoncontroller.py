@@ -333,6 +333,7 @@ class CDMICommonController(CDMIBaseController):
             body['capabilities']['cdmi_create_dataobject'] = True
             body['capabilities']['cdmi_delete_container'] = True
             body['capabilities']['cdmi_create_container'] = True
+            body['capabilities']['cdmi_copy_dataobject'] = True
         else:
             body['objectName'] = self.object_name
             body['capabilities']['cdmi_read_value'] = True
