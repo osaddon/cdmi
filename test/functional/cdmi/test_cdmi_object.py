@@ -34,10 +34,7 @@ class TestCDMIObject(unittest.TestCase):
             auth_method = 'https://'
         else:
             auth_method = 'http://'
-        auth_host = (self.conf.get('auth_host') + ':' +
-                     self.conf.get('access_port'))
-        auth_url = (auth_method + auth_host +
-                    self.conf.get('auth_prefix'))
+
         try:
             self.conf = get_config()['func_test']
             auth_host = self.conf.get('auth_host')
