@@ -90,4 +90,16 @@ def get_auth(auth_host, auth_port, auth_url, user_name, user_key, tenant_name):
                 return token, account_id
     else:
         """ try the old way"""
-        print 'basic auth'
+        conn = httplib.HTTPConnection(auth_host, auth_port)
+        headers = {'X-Storage-User': tenant_name + ':' + user_name,
+                   'X-Storage-Pass': user_key}
+        conn.request('GET', auth_url, None, headers)
+
+        res = conn.getresponse()
+        if res.status != 200:
+            raise Exception('The authentication has failed')
+
+        token = res.getheader('X-Auth-Token')
+        public_url = res.getheader('X-Storage-Url')
+        parts = public_url.split('/')
+        return token, parts[-1]
