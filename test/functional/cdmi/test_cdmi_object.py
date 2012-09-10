@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import unittest
-from test import get_config
-from swiftclient.client import get_auth
+
+from test_utils import get_config, get_auth
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 from email.MIMEBase import MIMEBase
@@ -35,25 +35,31 @@ class TestCDMIObject(unittest.TestCase):
         else:
             auth_method = 'http://'
         auth_host = (self.conf.get('auth_host') + ':' +
-                     self.conf.get('auth_port'))
+                     self.conf.get('access_port'))
         auth_url = (auth_method + auth_host +
-                    self.conf.get('auth_prefix') + 'v1.0')
+                    self.conf.get('auth_prefix'))
         try:
-            rets = get_auth(auth_url, (self.conf.get('account') + ':' +
-                                       self.conf.get('username')),
-                            self.conf.get('password'))
-            self.auth_token = rets[1]
-            #Parse the storage root and get the access root for CDMI
-            pieces = rets[0].partition('/v1/')
-            self.os_access_root = '/v1/' + pieces[2]
+            self.conf = get_config()['func_test']
+            auth_host = self.conf.get('auth_host')
+            auth_port = self.conf.get('auth_port')
+            access_port = self.conf.get('access_port')
+            auth_url =  self.conf.get('auth_prefix')
+            user_name = self.conf.get('username')
+            user_key = self.conf.get('password')
+            tenant_name = self.conf.get('account')
+
+            self.auth_token, self.account_id = get_auth(auth_host,
+                    auth_port,auth_url, user_name, user_key, tenant_name)
+
+            self.os_access_root = '/v1/' + self.account_id
             self.access_root = ('/' + self.conf.get('cdmi_root', 'cdmi') +
-                                '/' + pieces[2])
+                                '/' + self.account_id)
             self.cdmi_capability_root = ('/' +
                                          self.conf.get('cdmi_root', 'cdmi') +
                                          '/' +
                                          self.conf.get('cdmi_capability_id',
                                                        'cdmi_capabilities') +
-                                         '/' + pieces[2])
+                                         '/' + self.account_id)
             #Setup two container names
             suffix = format(time.time(), '.6f')
             self.top_container = 'cdmi_test_top_container_' + suffix
@@ -98,7 +104,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def __create_test_container(self, container_path):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'content-type': 'application/directory',
                    'content-length': '0'}
@@ -109,7 +115,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def __create_test_object(self, object_path):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token}
         conn.request('PUT', self.os_access_root + '/' + object_path,
                      'test object body', headers)
@@ -118,7 +124,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def __delete_test_entity(self, entity_path):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token}
         conn.request('DELETE', self.os_access_root + '/' + entity_path,
                      None, headers)
@@ -126,7 +132,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -155,7 +161,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_cdmi_multipart(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -196,7 +202,7 @@ class TestCDMIObject(unittest.TestCase):
 
         # now read the object and make sure everything is correct.
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token}
         conn.request('GET', (self.access_root + '/' + self.top_container +
                              '/' + self.child_container + '/' +
@@ -209,7 +215,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_non_cdmi_multipart(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'Content-Type': 'multipart/mixed'}
         msg = MIMEMultipart()
@@ -231,7 +237,7 @@ class TestCDMIObject(unittest.TestCase):
         conn.close()
         # now read the object and make sure everything is correct.
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object'}
@@ -258,7 +264,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_copy_object_same_dir(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -286,7 +292,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_copy_object_different_dir(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -314,7 +320,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_copy_object_non_exist(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -333,7 +339,7 @@ class TestCDMIObject(unittest.TestCase):
     def test_handle_base64_object(self):
         # create a new object using base64 encoded data
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -366,7 +372,7 @@ class TestCDMIObject(unittest.TestCase):
 
         # read the object just created.
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object'}
@@ -392,7 +398,7 @@ class TestCDMIObject(unittest.TestCase):
     def test_large_data_upload_cdmi(self):
         # create the first request
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'X-CDMI-UploadID': 'test_l_id_01',
@@ -429,7 +435,7 @@ class TestCDMIObject(unittest.TestCase):
 
         # create the second request
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'X-CDMI-UploadID': 'test_l_id_01',
@@ -467,7 +473,7 @@ class TestCDMIObject(unittest.TestCase):
 
         # read the object just created.
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object'}
@@ -494,7 +500,7 @@ class TestCDMIObject(unittest.TestCase):
     def test_large_data_upload_non_cdmi(self):
         # create the first request
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-UploadID': 'test_l_id_01',
                    'Content-Type': 'text/plain',
@@ -515,7 +521,7 @@ class TestCDMIObject(unittest.TestCase):
 
         # create the second request
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-UploadID': 'test_l_id_01',
                    'X-CDMI-Partial': 'false;count=2',
@@ -535,7 +541,7 @@ class TestCDMIObject(unittest.TestCase):
 
         # read the object just created.
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token}
         conn.request('GET', (self.access_root + '/' + self.top_container +
                              '/' + self.child_container + '/' +
@@ -551,7 +557,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_with_empty_body(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -577,7 +583,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_without_body(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -601,7 +607,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_in_virtual_container(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -629,7 +635,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_in_virtual_container_with_conflict_name(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -646,7 +652,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_non_cdmi(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token}
         body = 'value of the object'
         conn.request('PUT', (self.access_root + '/' + self.top_container +
@@ -657,7 +663,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_invalid_body(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -671,7 +677,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_no_parent(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -692,7 +698,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_create_object_exists_as_parent(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -709,7 +715,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_read_object(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object'}
@@ -732,7 +738,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_read_object_with_header_with_trailing_slash(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object'}
@@ -744,7 +750,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_read_object_without_accept_header(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1'}
         conn.request('GET', (self.access_root + '/' + self.top_container +
@@ -766,7 +772,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_read_object_in_virtual_container(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object'}
@@ -788,7 +794,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_read_object_with_wrong_version(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '4.x.x1',
                    'Accept': 'application/cdmi-object'}
@@ -801,7 +807,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_read_non_exist_object(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object'}
@@ -814,7 +820,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_read_non_exist_object_in_virtual_container(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object'}
@@ -826,7 +832,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_update_object(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -843,7 +849,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_update_object_in_virtual_container(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-object',
@@ -858,7 +864,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_delete_object(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1'}
         conn.request('DELETE', (self.access_root + '/' + self.top_container +
@@ -869,7 +875,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_delete_object_in_virtual_container(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1'}
         conn.request('DELETE', (self.access_root + '/' + self.top_container +
@@ -879,7 +885,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_delete_object_non_cdmi(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token}
         conn.request('DELETE', (self.access_root + '/' + self.top_container +
                                 '/' + self.child_container +
@@ -889,7 +895,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_delete_non_exist_object(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1'}
         conn.request('DELETE', (self.access_root + '/' + self.top_container +
@@ -901,7 +907,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_delete_non_exist_object_non_cdmi(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token}
         conn.request('DELETE', (self.access_root + '/' + self.top_container +
                                 '/' + self.child_container +
@@ -912,7 +918,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_object_capability_with_header_no_prefix(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-capability'}
@@ -938,7 +944,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_object_capability_with_prefix_no_header(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1'}
         conn.request('GET', (self.cdmi_capability_root +
@@ -965,7 +971,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_non_exist_object_capability(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-capability'}
@@ -979,7 +985,7 @@ class TestCDMIObject(unittest.TestCase):
 
     def test_non_exist_object_capability_with_prefix(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
-                                      self.conf.get('auth_port'))
+                                      self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1'}
         conn.request('GET', (self.cdmi_capability_root + '/' +
