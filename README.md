@@ -46,6 +46,16 @@ information correct as follows:
 if you have swift all-in-one environment, then make sure the information in
 /etc/swift/test.conf is as follows:
 
+    auth_host = 127.0.0.1
+    auth_port = 8080
+    access_port = 8080
+    auth_ssl = no
+    auth_prefix = /auth/v1.0
+
+    account = test
+    username = tester
+    password = testing
+
 Now the test cases in the test directory can be run using `python <name_of_test.py>` in the tests directory.
 
 Development with devstack
