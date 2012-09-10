@@ -35,15 +35,14 @@ information correct as follows:
 
 auth_host = 127.0.0.1
 auth_port = 5000
-#the port where Swift is running, normally 8080 in both all-in-one and devstack
+
 access_port = 8080
 auth_ssl = no
 auth_prefix = /v2.0/tokens
 
-# Primary functional test account (needs admin access to the account)
-account = <<tenant_name>>
-username = <<user_name>>
-password = <<password>>
+account = your_tenant_name
+username = your_user_name
+password = your_password
 
 if you have swift all-in-one environment, then make sure the information in
 /etc/swift/test.conf is as follows:
