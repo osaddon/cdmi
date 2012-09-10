@@ -33,16 +33,15 @@ if you are using keystone configuration for authentication, you will have to
 make changes in /etc/swift/test.conf and to make sure that you have all the
 information correct as follows:
 
-auth_host = 127.0.0.1
-auth_port = 5000
+    auth_host = 127.0.0.1
+    auth_port = 5000
+    access_port = 8080
+    auth_ssl = no
+    auth_prefix = /v2.0/tokens
 
-access_port = 8080
-auth_ssl = no
-auth_prefix = /v2.0/tokens
-
-account = your_tenant_name
-username = your_user_name
-password = your_password
+    account = your_tenant_name
+    username = your_user_name
+    password = your_password
 
 if you have swift all-in-one environment, then make sure the information in
 /etc/swift/test.conf is as follows:
