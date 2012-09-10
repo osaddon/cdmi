@@ -29,6 +29,25 @@ First copy a test config file to /etc/swift:
 
 	cp /opt/stack/swift/test/sample.conf /etc/swift/test.conf
 
+if you are using keystone configuration for authentication, you will have to
+make changes in /etc/swift/test.conf and to make sure that you have all the
+information correct as follows:
+
+auth_host = 127.0.0.1
+auth_port = 5000
+#the port where Swift is running, normally 8080 in both all-in-one and devstack
+access_port = 8080
+auth_ssl = no
+auth_prefix = /v2.0/tokens
+
+# Primary functional test account (needs admin access to the account)
+account = <<tenant_name>>
+username = <<user_name>>
+password = <<password>>
+
+if you have swift all-in-one environment, then make sure the information in
+/etc/swift/test.conf is as follows:
+
 Now the test cases in the test directory can be run using `python <name_of_test.py>` in the tests directory.
 
 Development with devstack
