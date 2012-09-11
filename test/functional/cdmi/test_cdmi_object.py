@@ -758,6 +758,30 @@ class TestCDMIObject(unittest.TestCase):
         self.assertIsNotNone(body['objectType'],
                              'Not objectType found which is required.')
 
+    def test_partial_cdmi_read_query_object(self):
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('access_port'))
+        headers = {'X-Auth-Token': self.auth_token,
+                   'X-CDMI-Specification-Version': '1.0.1',
+                   'Accept': 'application/cdmi-object'}
+        conn.request('GET', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_test + '?value:bytes=1-3'),
+                     None, headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 206, 'Object read failed')
+        data = res.read()
+        try:
+            body = json.loads(data)
+        except Exception as parsing_error:
+            raise parsing_error
+        self.assertIsNotNone(body['parentURI'],
+                             'Not parentURI found which is required.')
+        self.assertIsNotNone(body['objectName'],
+                             'Not objectName found which is required.')
+        self.assertIsNotNone(body['objectType'],
+                             'Not objectType found which is required.')
+
     def test_partial_noncdmi_read_object(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
                                       self.conf.get('access_port'))
@@ -767,6 +791,20 @@ class TestCDMIObject(unittest.TestCase):
         conn.request('GET', (self.access_root + '/' + self.top_container +
                              '/' + self.child_container + '/' +
                              self.object_test), None, headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 206, 'Partial object read failed')
+        data = res.read()
+        self.assertIsNotNone(data, 'Partial read has failed')
+
+    def test_partial_noncdmi_read_query_object(self):
+        conn = httplib.HTTPConnection(self.conf.get('auth_host'),
+                                      self.conf.get('access_port'))
+        headers = {'X-Auth-Token': self.auth_token}
+
+        conn.request('GET', (self.access_root + '/' + self.top_container +
+                             '/' + self.child_container + '/' +
+                             self.object_test + '?value:bytes=1-5'),
+                     None, headers)
         res = conn.getresponse()
         self.assertEqual(res.status, 206, 'Partial object read failed')
         data = res.read()

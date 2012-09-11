@@ -19,6 +19,7 @@ from cdmiutils import \
     (get_pair_from_header, get_err_response, check_resource, send_manifest)
 from webob import Request, Response
 from swift.common.utils import get_logger
+from urlparse import parse_qs
 import json
 import base64
 import email
@@ -346,6 +347,17 @@ class CDMICommonController(CDMIBaseController):
         return res
 
     def _read_object(self, env, start_response, headers):
+
+        query_string = env.get('QUERY_STRING', '').lower()
+        if len(query_string) > 0:
+            params = parse_qs(query_string, True, False)
+            new_qs = ''
+            for key, value in params.items():
+                if 'value:bytes' == key:
+                    env['HTTP_RANGE'] = 'bytes=' + ''.join(value)
+                else:
+                    new_qs += key + '=' + ''.join(value) + '&'
+            env['QUERY_STRING'] = new_qs
 
         req = Request(env)
         os_res = req.get_response(self.app)
