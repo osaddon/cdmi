@@ -391,7 +391,7 @@ class CDMICommonController(CDMIBaseController):
             body['value'] = object_body
         body['valuerange'] = '0-' + str(len(object_body))
         res.body = json.dumps(body, indent=2)
-        res.status_int = 200
+        res.status_int = os_res.status_int
 
         return res
 
