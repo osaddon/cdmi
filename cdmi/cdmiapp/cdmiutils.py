@@ -109,9 +109,10 @@ def check_resource(env, method, path, logger, get_body=False,
     # Fixup the auth token, for some reason, the auth token padded the user
     # account at the front with a comma. We need to get rid of it, otherwise,
     # the auth token will be considered invalid.
-    key, sep, value = req.headers[Consts.AUTH_TOKEN].partition(',')
     headers = {}
-    headers[Consts.AUTH_TOKEN] = value if value != '' else key
+    if req.headers.get(Consts.AUTH_TOKEN):
+        key, sep, value = req.headers[Consts.AUTH_TOKEN].partition(',')
+        headers[Consts.AUTH_TOKEN] = value if value != '' else key
     headers['Accept'] = 'application/json'
     method = 'GET' if not method else method
     path = req.path if not path else path
