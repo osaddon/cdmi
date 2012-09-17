@@ -22,6 +22,19 @@ And add the following section to the file:
 	[filter:cdmi]
 	use = egg:cdmiapi#cdmiapp
 
+To use CDMI ReSTful API to access containers and data objects, a CDMI client
+normally need to know the root path plus the host name and port number. This
+implementation uses "cdmi/" as its root and the port number is 8080. An example
+url to access a container may look like this:
+
+    http://hostname:8080/cdmi/root_container/container1/data1
+
+To access the capability, a CDMI client should simply use the host name, port
+and the root path "cdmi/" and the returned capability path. For example, to
+access the data1 capability, the url may look like this:
+
+    http://hostname:8080/cdmi/cdmi_capabilities/root_container/container1/data1
+
 Running tests
 =============
 
