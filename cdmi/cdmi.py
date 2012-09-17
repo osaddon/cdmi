@@ -114,6 +114,8 @@ class CdmiMiddleware(object):
             if method in ['GET']:
                 if account_name is None:
                     controller = LoginController
+                    if is_capability_request:
+                        env['HTTP_ACCEPT'] = 'application/cdmi-capability'
                 elif container_name is None:
                     controller = AccountController
                     if is_capability_request:

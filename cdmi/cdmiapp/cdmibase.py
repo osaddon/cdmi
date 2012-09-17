@@ -83,6 +83,25 @@ class LoginController(Controller):
         req = Request(env)
         ssl = True if req.scheme.lower() == 'https' else False
 
+        if env.get('HTTP_ACCEPT', '').find('application/cdmi-capability') >= 0:
+            #this is a system capability request.
+            res = Response()
+            res.status = 200
+            res.headers['Content-Type'] = Consts.CDMI_APP_CAPABILITY
+            res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
+
+            body = {}
+            body['parentURI'] = ''
+            body['objectName'] = ''
+            body['objectType'] = Consts.CDMI_APP_CAPABILITY
+            body['capabilities'] = {}
+            body['capabilities']['cdmi_dataobjects'] = True
+            body['capabilities']['cdmi_object_copy_from_local'] = True
+            body['capabilities']['cdmi_multipart_mime'] = True
+
+            res.body = json.dumps(body, indent=2)
+            return res
+
         conn = http_connect_raw(req.server_name, req.server_port, 'GET',
                                 '/auth/v1.0', req.headers, None, ssl)
         res = conn.getresponse()
