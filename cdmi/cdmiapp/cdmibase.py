@@ -92,7 +92,7 @@ class LoginController(Controller):
 
             body = {}
             body['parentURI'] = ''
-            body['objectName'] = ''
+            body['objectName'] = 'cdmi_capabilities/'
             body['objectType'] = Consts.CDMI_APP_CAPABILITY
             body['capabilities'] = {}
             body['capabilities']['cdmi_dataobjects'] = 'true'
