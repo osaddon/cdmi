@@ -95,9 +95,9 @@ class LoginController(Controller):
             body['objectName'] = ''
             body['objectType'] = Consts.CDMI_APP_CAPABILITY
             body['capabilities'] = {}
-            body['capabilities']['cdmi_dataobjects'] = True
-            body['capabilities']['cdmi_object_copy_from_local'] = True
-            body['capabilities']['cdmi_multipart_mime'] = True
+            body['capabilities']['cdmi_dataobjects'] = 'true'
+            body['capabilities']['cdmi_object_copy_from_local'] = 'true'
+            body['capabilities']['cdmi_multipart_mime'] = 'true'
 
             res.body = json.dumps(body, indent=2)
             return res

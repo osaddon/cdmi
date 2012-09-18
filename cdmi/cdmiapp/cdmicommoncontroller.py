@@ -328,20 +328,20 @@ class CDMICommonController(CDMIBaseController):
             else:
                 body['objectName'] = self.container_name + '/'
 
-            body['capabilities']['cdmi_list_children'] = True
-            body['capabilities']['cdmi_read_metadata'] = True
-            body['capabilities']['cdmi_modify_metadata'] = True
-            body['capabilities']['cdmi_create_dataobject'] = True
-            body['capabilities']['cdmi_delete_container'] = True
-            body['capabilities']['cdmi_create_container'] = True
-            body['capabilities']['cdmi_copy_dataobject'] = True
+            body['capabilities']['cdmi_list_children'] = 'true'
+            body['capabilities']['cdmi_read_metadata'] = 'true'
+            body['capabilities']['cdmi_modify_metadata'] = 'true'
+            body['capabilities']['cdmi_create_dataobject'] = 'true'
+            body['capabilities']['cdmi_delete_container'] = 'true'
+            body['capabilities']['cdmi_create_container'] = 'true'
+            body['capabilities']['cdmi_copy_dataobject'] = 'true'
         else:
             body['objectName'] = self.object_name
-            body['capabilities']['cdmi_read_value'] = True
-            body['capabilities']['cdmi_read_metadata'] = True
-            body['capabilities']['cdmi_modify_value'] = True
-            body['capabilities']['cdmi_modify_metadata'] = True
-            body['capabilities']['cdmi_delete_dataobject'] = True
+            body['capabilities']['cdmi_read_value'] = 'true'
+            body['capabilities']['cdmi_read_metadata'] = 'true'
+            body['capabilities']['cdmi_modify_value'] = 'true'
+            body['capabilities']['cdmi_modify_metadata'] = 'true'
+            body['capabilities']['cdmi_delete_dataobject'] = 'true'
 
         res.body = json.dumps(body, indent=2)
         return res
@@ -386,7 +386,7 @@ class CDMICommonController(CDMIBaseController):
                                                self.account_name,
                                                self.container_name,
                                                self.parent_name,
-                                               self.object_name) + '/'
+                                               self.object_name)
         body['completionStatus'] = 'Complete'
         body['metadata'] = {}
 
