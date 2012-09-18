@@ -98,6 +98,8 @@ class LoginController(Controller):
             body['capabilities']['cdmi_dataobjects'] = 'true'
             body['capabilities']['cdmi_object_copy_from_local'] = 'true'
             body['capabilities']['cdmi_multipart_mime'] = 'true'
+            body['capabilities']['cdmi_metadata_maxitems'] = 90
+            body['capabilities']['cdmi_metadata_maxtotalsize'] = 4096 * 90
 
             res.body = json.dumps(body, indent=2)
             return res
