@@ -381,6 +381,7 @@ class CDMICommonController(CDMIBaseController):
         body['objectType'] = Consts.CDMI_APP_OBJECT
         body['objectName'] = self.object_name
         body['parentURI'] = concat_parts(self.account_name,
+                                         self.container_name,
                                          self.parent_name) + '/'
         body['capabilitiesURI'] = concat_parts(self.cdmi_capability_id,
                                                self.account_name,
