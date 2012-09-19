@@ -66,6 +66,112 @@ class ErrorController(Controller):
         Controller.__init__(self, conf, app, logger)
 
 
+class CapabilityController(Controller):
+    """
+    Capability controller to handles cdmi capability request
+    """
+    def __init__(self, env, conf, app, logger, account_name, container_name,
+                 parent_name, object_name, **kwargs):
+        Controller.__init__(self, conf, app, logger)
+        self.account_name = account_name
+        self.container_name = container_name
+        self.object_name = object_name
+        self.parent_name = parent_name
+        self.logger.info('tongli')
+        self.logger.info(self.container_name)
+
+    # Use GET to handle all cdmi log in attempt and respond with X-Storage-Url
+    def GET(self, env, start_response):
+        """
+        Handle for GET method
+        """
+        res = Response()
+
+        # System wide capability request
+        if self.container_name is None or self.container_name == '':
+            #this is a system capability request.
+            res.status = 200
+            res.headers['Content-Type'] = Consts.CDMI_APP_CAPABILITY
+            res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
+
+            body = {}
+            body['parentURI'] = self.account_name + '/'
+            body['objectName'] = 'cdmi_capabilities/'
+            body['objectType'] = Consts.CDMI_APP_CAPABILITY
+            body['capabilities'] = {}
+            body['capabilities']['cdmi_dataobjects'] = 'true'
+            body['capabilities']['cdmi_object_copy_from_local'] = 'true'
+            body['capabilities']['cdmi_multipart_mime'] = 'true'
+            body['capabilities']['cdmi_metadata_maxitems'] = 90
+            body['capabilities']['cdmi_metadata_maxtotalsize'] = 4096 * 90
+            body['childrenRange'] = '0-2'
+            body['children'] = ['rootcontainer/', 'container/',
+                                'dataobject/']
+            body['completionStatus'] = 'Complete'
+        elif self.container_name == 'rootcontainer':
+            res.status = 200
+            res.headers['Content-Type'] = Consts.CDMI_APP_CAPABILITY
+            res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
+
+            body = {}
+            body['parentURI'] = '/'.join([self.account_name,
+                                          'cdmi_capabilities/'])
+            body['objectName'] = 'rootcontainer/'
+            body['objectType'] = Consts.CDMI_APP_CAPABILITY
+            body['capabilities'] = {}
+            body['capabilities']['cdmi_list_children'] = True
+            body['capabilities']['cdmi_create_container'] = True
+            body['childrenRange'] = '0-0'
+            body['children'] = {}
+            body['completionStatus'] = 'Complete'
+        elif self.container_name == 'container':
+            res.status = 200
+            res.headers['Content-Type'] = Consts.CDMI_APP_CAPABILITY
+            res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
+
+            body = {}
+            body['parentURI'] = '/'.join([self.account_name,
+                                          'cdmi_capabilities/'])
+            body['objectName'] = 'container/'
+            body['objectType'] = Consts.CDMI_APP_CAPABILITY
+            body['capabilities'] = {}
+            body['capabilities']['cdmi_list_children'] = 'true'
+            body['capabilities']['cdmi_read_metadata'] = 'true'
+            body['capabilities']['cdmi_modify_metadata'] = 'true'
+            body['capabilities']['cdmi_create_dataobject'] = 'true'
+            body['capabilities']['cdmi_delete_container'] = 'true'
+            body['capabilities']['cdmi_create_container'] = 'true'
+            body['capabilities']['cdmi_copy_dataobject'] = 'true'
+            body['childrenRange'] = '0-0'
+            body['children'] = {}
+            body['completionStatus'] = 'Complete'
+        elif self.container_name == 'dataobject':
+            res.status = 200
+            res.headers['Content-Type'] = Consts.CDMI_APP_CAPABILITY
+            res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
+
+            body = {}
+            body['parentURI'] = '/'.join([self.account_name,
+                                          'cdmi_capabilities/'])
+            body['objectName'] = 'dataobject/'
+            body['objectType'] = Consts.CDMI_APP_CAPABILITY
+            body['capabilities'] = {}
+            body['capabilities']['cdmi_read_value'] = 'true'
+            body['capabilities']['cdmi_read_metadata'] = 'true'
+            body['capabilities']['cdmi_modify_value'] = 'true'
+            body['capabilities']['cdmi_modify_metadata'] = 'true'
+            body['capabilities']['cdmi_delete_dataobject'] = 'true'
+            body['childrenRange'] = '0-0'
+            body['children'] = {}
+            body['completionStatus'] = 'Complete'
+        else:
+            res.status = 404
+            body = {}
+
+        res.body = json.dumps(body, indent=2)
+        return res
+
+
 class LoginController(Controller):
     """
     Login controller, handles cdmi login request
@@ -82,27 +188,6 @@ class LoginController(Controller):
         # Create a new WebOb Request object according to the current request
         req = Request(env)
         ssl = True if req.scheme.lower() == 'https' else False
-
-        if env.get('HTTP_ACCEPT', '').find('application/cdmi-capability') >= 0:
-            #this is a system capability request.
-            res = Response()
-            res.status = 200
-            res.headers['Content-Type'] = Consts.CDMI_APP_CAPABILITY
-            res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
-
-            body = {}
-            body['parentURI'] = ''
-            body['objectName'] = 'cdmi_capabilities/'
-            body['objectType'] = Consts.CDMI_APP_CAPABILITY
-            body['capabilities'] = {}
-            body['capabilities']['cdmi_dataobjects'] = 'true'
-            body['capabilities']['cdmi_object_copy_from_local'] = 'true'
-            body['capabilities']['cdmi_multipart_mime'] = 'true'
-            body['capabilities']['cdmi_metadata_maxitems'] = 90
-            body['capabilities']['cdmi_metadata_maxtotalsize'] = 4096 * 90
-
-            res.body = json.dumps(body, indent=2)
-            return res
 
         conn = http_connect_raw(req.server_name, req.server_port, 'GET',
                                 '/auth/v1.0', req.headers, None, ssl)
@@ -132,22 +217,6 @@ class AccountController(Controller):
         self.account_name = account_name
         env['PATH_INFO'] = '/v1/%s' % (account_name)
 
-    def _capability(self, env, start_response):
-        res = Response()
-        res.status = 200
-        res.headers['Content-Type'] = Consts.CDMI_APP_CAPABILITY
-        res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
-
-        body = {}
-        body['objectType'] = Consts.CDMI_APP_CAPABILITY
-        body['objectName'] = self.account_name
-        body['capabilities'] = {}
-        body['capabilities']['cdmi_list_children'] = True
-        body['capabilities']['cdmi_create_container'] = True
-
-        res.body = json.dumps(body, indent=2)
-        return res
-
     def _read_root(self, env, start_response):
 
         req = Request(env)
@@ -158,11 +227,11 @@ class AccountController(Controller):
 
         # Setup required attributes for response body
         body['objectType'] = Consts.CDMI_APP_CONTAINER
-        body['mimetype'] = Consts.CDMI_APP_CONTAINER
-        body['objectName'] = self.account_name
+        body['objectName'] = self.account_name + '/'
         body['parentURI'] = ''
         body['capabilitiesURI'] = \
-            concat_parts(self.cdmi_capability_id, self.account_name) + '/'
+            concat_parts(self.account_name, self.cdmi_capability_id,
+                         'rootcontainer') + '/'
         body['metadata'] = {}
 
         body['children'] = []
@@ -184,11 +253,7 @@ class AccountController(Controller):
         req = Request(env)
         # if cdmi content, then we return response in cdmi format
         if req.headers.get(Consts.CDMI_VERSION, False):
-            accept_header = req.headers.get('accept', '')
-            if accept_header.find(Consts.CDMI_APP_CAPABILITY) >= 0:
-                return self._capability(env, start_response)
-            else:
-                return self._read_root(env, start_response)
+            return self._read_root(env, start_response)
         else:
             res = req.get_response(self.app)
             return res

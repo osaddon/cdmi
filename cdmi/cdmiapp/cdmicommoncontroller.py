@@ -287,64 +287,9 @@ class CDMIBaseController(Controller):
 
 class CDMICommonController(CDMIBaseController):
     """
-    Handles container request.
-    This controller handles delete, get and capability requests for both
-    container and objects because there is no identifier to indicate if
-    a delete/capability request is for container or object, so for all
-    delete/capability request, this control will be handling the request.
-    Other than the delete, capability request, this controller will also
-    handle container creation, update and retrieval requests.
+    the base controller which handles entity read and delete
+    extended the controllers will handle other operations.
     """
-
-    def _capability(self, env, start_response):
-
-        res, is_container, headers, children = \
-            self._check_resource_attribute(env, start_response)
-
-        if res:
-            return res
-
-        res = Response()
-        res.status = 200
-        res.headers['Content-Type'] = Consts.CDMI_APP_CAPABILITY
-        res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
-
-        body = {}
-        body['objectType'] = Consts.CDMI_APP_CAPABILITY
-
-        if self.object_name:
-            body['parentURI'] = concat_parts(self.cdmi_capability_id,
-                                             self.account_name,
-                                             self.container_name,
-                                             self.parent_name) + '/'
-        else:
-            body['parentURI'] = concat_parts(self.cdmi_capability_id,
-                                             self.account_name) + '/'
-
-        body['capabilities'] = {}
-        if is_container:
-            if self.object_name:
-                body['objectName'] = self.object_name + '/'
-            else:
-                body['objectName'] = self.container_name + '/'
-
-            body['capabilities']['cdmi_list_children'] = 'true'
-            body['capabilities']['cdmi_read_metadata'] = 'true'
-            body['capabilities']['cdmi_modify_metadata'] = 'true'
-            body['capabilities']['cdmi_create_dataobject'] = 'true'
-            body['capabilities']['cdmi_delete_container'] = 'true'
-            body['capabilities']['cdmi_create_container'] = 'true'
-            body['capabilities']['cdmi_copy_dataobject'] = 'true'
-        else:
-            body['objectName'] = self.object_name
-            body['capabilities']['cdmi_read_value'] = 'true'
-            body['capabilities']['cdmi_read_metadata'] = 'true'
-            body['capabilities']['cdmi_modify_value'] = 'true'
-            body['capabilities']['cdmi_modify_metadata'] = 'true'
-            body['capabilities']['cdmi_delete_dataobject'] = 'true'
-
-        res.body = json.dumps(body, indent=2)
-        return res
 
     def _read_object(self, env, start_response, headers):
 
@@ -383,11 +328,9 @@ class CDMICommonController(CDMIBaseController):
         body['parentURI'] = concat_parts(self.account_name,
                                          self.container_name,
                                          self.parent_name) + '/'
-        body['capabilitiesURI'] = concat_parts(self.cdmi_capability_id,
-                                               self.account_name,
-                                               self.container_name,
-                                               self.parent_name,
-                                               self.object_name)
+        body['capabilitiesURI'] = concat_parts(self.account_name,
+                                               self.cdmi_capability_id,
+                                               'dataobject') + '/'
         body['completionStatus'] = 'Complete'
         body['metadata'] = {}
 
@@ -427,11 +370,9 @@ class CDMICommonController(CDMIBaseController):
             body['objectName'] = self.container_name + '/'
             body['parentURI'] = self.account_name + '/'
 
-        body['capabilitiesURI'] = concat_parts(self.cdmi_capability_id,
-                                               self.account_name,
-                                               self.container_name,
-                                               self.parent_name,
-                                               self.object_name) + '/'
+        body['capabilitiesURI'] = concat_parts(self.account_name,
+                                               self.cdmi_capability_id,
+                                               'container') + '/'
         body['completionStatus'] = 'Complete'
         body['metadata'] = {}
 
@@ -493,12 +434,7 @@ class CDMICommonController(CDMIBaseController):
         """
         Handle GET Container (List Objects) request
         """
-        # Create a new WebOb Request object according to the current request
-        accept_header = env.get('HTTP_ACCEPT', '')
-        if accept_header.find(Consts.CDMI_APP_CAPABILITY) >= 0:
-            return self._capability(env, start_response)
-        else:
-            return self._read_entity(env, start_response)
+        return self._read_entity(env, start_response)
 
     def DELETE(self, env, start_response):
         """

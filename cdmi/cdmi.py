@@ -29,7 +29,8 @@ in front of the proxy-server middleware.
 """
 
 from cdmiapp.cdmibase import \
-    (Consts, concat_parts, ErrorController, LoginController, AccountController)
+    (Consts, concat_parts, ErrorController, AccountController)
+from cdmiapp.cdmibase import CapabilityController, LoginController
 from cdmiapp.cdmicontrollers import \
     (ContainerController, ObjectController)
 from cdmiapp.cdmicommoncontroller import \
@@ -94,11 +95,15 @@ class CdmiMiddleware(object):
             # for rest of the work
             subs = subs[self.cdmi_root_length:]
             subs[len(subs):] = [None, None, None, None]
-            if subs[0] == self.cdmi_capability_id:
+            # if it is the capability request, then normalize the path
+            if subs[1] == self.cdmi_capability_id:
                 is_capability_request = True
-                subs = subs[1:]
+                del subs[1]
             else:
                 is_capability_request = False
+
+            if accept.find('application/cdmi-capability') >= 0:
+                is_capability_request = True
 
             account_name = subs[0]
             container_name = subs[1]
@@ -112,18 +117,14 @@ class CdmiMiddleware(object):
                 parent_name = '/'.join(newsubs[0:-1])
 
             if method in ['GET']:
-                if account_name is None:
+                if is_capability_request:
+                    controller = CapabilityController
+                elif account_name is None:
                     controller = LoginController
-                    if is_capability_request:
-                        env['HTTP_ACCEPT'] = 'application/cdmi-capability'
                 elif container_name is None:
                     controller = AccountController
-                    if is_capability_request:
-                        env['HTTP_ACCEPT'] = 'application/cdmi-capability'
                 else:
                     controller = CDMICommonController
-                    if is_capability_request:
-                        env['HTTP_ACCEPT'] = 'application/cdmi-capability'
                     # To setup a flag so that we know what the request wants
                     if (content_is_container or accept_is_container or
                         path.endswith('/')):

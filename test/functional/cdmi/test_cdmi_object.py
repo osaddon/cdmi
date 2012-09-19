@@ -40,13 +40,13 @@ class TestCDMIObject(unittest.TestCase):
             auth_host = self.conf.get('auth_host')
             auth_port = self.conf.get('auth_port')
             access_port = self.conf.get('access_port')
-            auth_url =  self.conf.get('auth_prefix')
+            auth_url = self.conf.get('auth_prefix')
             user_name = self.conf.get('username')
             user_key = self.conf.get('password')
             tenant_name = self.conf.get('account')
 
             self.auth_token, self.account_id = get_auth(auth_host,
-                    auth_port,auth_url, user_name, user_key, tenant_name)
+                    auth_port, auth_url, user_name, user_key, tenant_name)
 
             self.os_access_root = '/v1/' + self.account_id
             self.access_root = ('/' + self.conf.get('cdmi_root', 'cdmi') +
@@ -54,9 +54,9 @@ class TestCDMIObject(unittest.TestCase):
             self.cdmi_capability_root = ('/' +
                                          self.conf.get('cdmi_root', 'cdmi') +
                                          '/' +
+                                         self.account_id + '/' +
                                          self.conf.get('cdmi_capability_id',
-                                                       'cdmi_capabilities') +
-                                         '/' + self.account_id)
+                                                       'cdmi_capabilities'))
             #Setup two container names
             suffix = format(time.time(), '.6f')
             self.top_container = 'cdmi_test_top_container_' + suffix
@@ -445,7 +445,7 @@ class TestCDMIObject(unittest.TestCase):
         body['valuetransferencoding'] = 'base64'
         value2 = 'value2 and value2'
         original_value = base64.encodestring(value2)
-        headers['Content-Range'] = 'bytes='+ str(len(value1)) + '-' + \
+        headers['Content-Range'] = 'bytes=' + str(len(value1)) + '-' + \
                                 str(len(value1) + len(value2))
         body['value'] = original_value
         conn.request('PUT', (self.access_root + '/' + self.top_container +
@@ -524,7 +524,7 @@ class TestCDMIObject(unittest.TestCase):
                    'X-CDMI-Partial': 'false;count=2',
                    'Content-Type': 'text/plain'}
         value2 = 'value2 and value2'
-        headers['Content-Range'] = 'bytes='+ str(len(value1)) + '-' + \
+        headers['Content-Range'] = 'bytes=' + str(len(value1)) + '-' + \
                                 str(len(value1) + len(value2))
         body = value2
         conn.request('PUT', (self.access_root + '/' + self.top_container +
@@ -551,7 +551,6 @@ class TestCDMIObject(unittest.TestCase):
         self.assertEquals(data, value1 + value2,
                       'retrieved value does not match original')
         conn.close()
-
 
     def test_create_object_with_empty_body(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
@@ -990,15 +989,14 @@ class TestCDMIObject(unittest.TestCase):
         res = conn.getresponse()
         self.assertEqual(res.status, 404, 'object deletion should have failed')
 
-    def test_object_capability_with_header_no_prefix(self):
+    def test_object_capability_with_header(self):
         conn = httplib.HTTPConnection(self.conf.get('auth_host'),
                                       self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1',
                    'Accept': 'application/cdmi-capability'}
-        conn.request('GET', (self.access_root + '/' + self.top_container +
-                             '/' + self.child_container +
-                             '/' + self.object_test), None, headers)
+        conn.request('GET', (self.cdmi_capability_root + '/dataobject/'),
+                     None, headers)
         res = conn.getresponse()
         self.assertEqual(res.status, 200, 'Object capability read failed')
         data = res.read()
@@ -1022,9 +1020,7 @@ class TestCDMIObject(unittest.TestCase):
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1'}
         conn.request('GET', (self.cdmi_capability_root +
-                             '/' + self.top_container +
-                             '/' + self.child_container +
-                             '/' + self.object_test), None, headers)
+                             '/dataobject'), None, headers)
         res = conn.getresponse()
         self.assertEqual(res.status, 200, 'Object capability read failed')
         data = res.read()
@@ -1062,10 +1058,8 @@ class TestCDMIObject(unittest.TestCase):
                                       self.conf.get('access_port'))
         headers = {'X-Auth-Token': self.auth_token,
                    'X-CDMI-Specification-Version': '1.0.1'}
-        conn.request('GET', (self.cdmi_capability_root + '/' +
-                             self.top_container + '/' +
-                             self.child_container + '/' +
-                             'cdmi_test_not_exist_' +
+        conn.request('GET', (self.cdmi_capability_root +
+                             '/cdmi_test_not_exist_' +
                              format(time.time(), '.6f')), None, headers)
         res = conn.getresponse()
         self.assertEqual(res.status, 404,
