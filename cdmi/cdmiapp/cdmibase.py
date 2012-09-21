@@ -95,7 +95,8 @@ class CapabilityController(Controller):
             res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
 
             body = {}
-            body['parentURI'] = self.account_name + '/'
+            body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name, ''])
             body['objectName'] = 'cdmi_capabilities/'
             body['objectType'] = Consts.CDMI_APP_CAPABILITY
             body['capabilities'] = {}
@@ -114,7 +115,8 @@ class CapabilityController(Controller):
             res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
 
             body = {}
-            body['parentURI'] = '/'.join([self.account_name,
+            body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name,
                                           'cdmi_capabilities/'])
             body['objectName'] = 'rootcontainer/'
             body['objectType'] = Consts.CDMI_APP_CAPABILITY
@@ -130,7 +132,8 @@ class CapabilityController(Controller):
             res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
 
             body = {}
-            body['parentURI'] = '/'.join([self.account_name,
+            body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name,
                                           'cdmi_capabilities/'])
             body['objectName'] = 'container/'
             body['objectType'] = Consts.CDMI_APP_CAPABILITY
@@ -151,7 +154,8 @@ class CapabilityController(Controller):
             res.headers[Consts.CDMI_VERSION] = Consts.CDMI_VERSION_VALUE
 
             body = {}
-            body['parentURI'] = '/'.join([self.account_name,
+            body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name,
                                           'cdmi_capabilities/'])
             body['objectName'] = 'dataobject/'
             body['objectType'] = Consts.CDMI_APP_CAPABILITY
@@ -228,10 +232,11 @@ class AccountController(Controller):
         # Setup required attributes for response body
         body['objectType'] = Consts.CDMI_APP_CONTAINER
         body['objectName'] = self.account_name + '/'
-        body['parentURI'] = ''
-        body['capabilitiesURI'] = \
-            concat_parts(self.account_name, self.cdmi_capability_id,
-                         'rootcontainer') + '/'
+        body['parentURI'] = '/'.join(['', self.cdmi_root, ''])
+        body['capabilitiesURI'] = '/'.join(['', self.cdmi_root,
+                                            self.account_name,
+                                            self.cdmi_capability_id,
+                                           'rootcontainer/'])
         body['metadata'] = {}
 
         body['children'] = []
@@ -240,6 +245,7 @@ class AccountController(Controller):
             children = json.loads(res.body)
             for child in children:
                 body['children'].append(child['name'] + '/')
+        body['childrenRange'] = '0-' + str(len(body['children']))
         res.body = json.dumps(body, indent=2)
 
         return res

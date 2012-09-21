@@ -325,12 +325,17 @@ class CDMICommonController(CDMIBaseController):
         # Setup required attributes for response body
         body['objectType'] = Consts.CDMI_APP_OBJECT
         body['objectName'] = self.object_name
-        body['parentURI'] = concat_parts(self.account_name,
-                                         self.container_name,
-                                         self.parent_name) + '/'
-        body['capabilitiesURI'] = concat_parts(self.account_name,
-                                               self.cdmi_capability_id,
-                                               'dataobject') + '/'
+
+        body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                      self.account_name,
+                                      self.container_name,
+                                      self.parent_name, ''])
+
+        body['capabilitiesURI'] = '/'.join(['', self.cdmi_root,
+                                            self.account_name,
+                                            self.cdmi_capability_id,
+                                            'dataobject/'])
+
         body['completionStatus'] = 'Complete'
         body['metadata'] = {}
 
@@ -363,16 +368,19 @@ class CDMICommonController(CDMIBaseController):
         body['objectType'] = Consts.CDMI_APP_CONTAINER
         if self.object_name:
             body['objectName'] = self.object_name + '/'
-            body['parentURI'] = concat_parts(self.account_name,
-                                             self.container_name,
-                                             self.parent_name) + '/'
+            body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name,
+                                          self.container_name,
+                                          self.parent_name, ''])
         else:
             body['objectName'] = self.container_name + '/'
-            body['parentURI'] = self.account_name + '/'
+            body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name, ''])
 
-        body['capabilitiesURI'] = concat_parts(self.account_name,
-                                               self.cdmi_capability_id,
-                                               'container') + '/'
+        body['capabilitiesURI'] = '/'.join(['', self.cdmi_root,
+                                            self.account_name,
+                                            self.cdmi_capability_id,
+                                            'container/'])
         body['completionStatus'] = 'Complete'
         body['metadata'] = {}
 
@@ -405,7 +413,7 @@ class CDMICommonController(CDMIBaseController):
                     if tracking_device.get(child_name) is None:
                         tracking_device[child_name] = child_name
                         body['children'].append(child_name)
-
+        body['childrenRange'] = '0-' + str(len(body['children']))
         res.body = json.dumps(body, indent=2)
         res.status_int = 200
 
