@@ -93,20 +93,20 @@ Use the Authentication token and URL which is in the response from the last
 curl command to perform an *GET* operation:
 
     curl -v -X GET -H 'X-Auth-Token: AUTH_tk56b01c82710b41328db7c9f953d3933d'
-    http://127.0.0.1:8080/v1/AUTH_test
+    http://127.0.0.1:8080/cdmi/<user_account>/
 
 Create a Container: (replace the auth token with the token obtained above,
-also replace the root container)
+also replace the user_account with your user account)
 
     curl -v -X PUT -H 'X-Auth-Token: <<your token>>'
     -H 'Content-tType: application/directory'-H 'Content-Length: 0'
-    http://127.0.0.1:8080/v1/<root container>/<container_name>
+    http://127.0.0.1:8080/cdmi/<user_account>/<root container>
 
 Query the capabilites of a Container:
 
     curl -v -X GET -H 'X-Auth-Token: <<your token>>'
     -H 'X-CDMI-Specification-Version: 1.0.1'
-    http://127.0.0.1:8080/cdmi/cdmi_capabilities/<root container>/<container_name>
+    http://127.0.0.1:8080/cdmi/<user_id>/cdmi_capabilities/container/
 
 Add an Object to a Container:
 
@@ -114,4 +114,4 @@ Add an Object to a Container:
     -H 'X-CDMI-Specification-Version: 1.0.1'
     -H 'Accept: application/cdmi-object'
     -H 'Content-Type: application/cdmi-object'
-    http://127.0.0.1:8080/v1/<root container>/<container_name>/<object_name> -d '<Some JSON>'
+    http://127.0.0.1:8080/cdmi/<user_account>/<root container>/<container_name>/<object_name> -d '<Some JSON>'
