@@ -182,6 +182,7 @@ class CdmiMiddleware(object):
         path = unquote(env.get('PATH_INFO', ''))
         cdmi_version = env.get('HTTP_X_CDMI_SPECIFICATION_VERSION', False)
         method = env.get('REQUEST_METHOD').upper()
+
         # All CDMI requests have to have header with
         # the X-CDMI-Specification-Version
         if cdmi_version and self.cdmi_version_supported.find(cdmi_version) < 0:

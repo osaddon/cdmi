@@ -326,10 +326,15 @@ class CDMICommonController(CDMIBaseController):
         body['objectType'] = Consts.CDMI_APP_OBJECT
         body['objectName'] = self.object_name
 
-        body['parentURI'] = '/'.join(['', self.cdmi_root,
-                                      self.account_name,
-                                      self.container_name,
-                                      self.parent_name, ''])
+        if self.parent_name != '':
+            body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name,
+                                          self.container_name,
+                                          self.parent_name, ''])
+        else:
+            body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name,
+                                          self.container_name, ''])
 
         body['capabilitiesURI'] = '/'.join(['', self.cdmi_root,
                                             self.account_name,
@@ -368,10 +373,15 @@ class CDMICommonController(CDMIBaseController):
         body['objectType'] = Consts.CDMI_APP_CONTAINER
         if self.object_name:
             body['objectName'] = self.object_name + '/'
-            body['parentURI'] = '/'.join(['', self.cdmi_root,
+            if self.parent_name != '':
+                body['parentURI'] = '/'.join(['', self.cdmi_root,
                                           self.account_name,
                                           self.container_name,
                                           self.parent_name, ''])
+            else:
+                body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name,
+                                          self.container_name, ''])
         else:
             body['objectName'] = self.container_name + '/'
             body['parentURI'] = '/'.join(['', self.cdmi_root,
