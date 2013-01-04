@@ -188,17 +188,24 @@ class CDMIBaseController(Controller):
         # multipart
         if content_type.find('multipart/mixed') >= 0:
             try:
-                message = email.message_from_file(req.body_file)
+                if req.body.find('multipart/mixed;') < 0:
+                    msg_body = ''.join(['Content-Type: ',
+                                        req.headers['Content-Type'],
+                                        '\n\n', req.body])
+                else:
+                    msg_body = req.body
+
+                message = email.message_from_string(msg_body)
+                if message.preamble and is_cdmi_type:
+                    body = json.loads(message.preamble)
+
                 for i, part in enumerate(message.walk()):
                     if i > 0:
-                        content_type = part.get_content_type() or ''
-                        if (content_type.find('cdmi-object') > 0 and
-                            is_cdmi_type):
-                            payload = part.get_payload(decode=True)
-                            body.update(json.loads(payload))
-                        else:
-                            body['value'] = part.get_payload(decode=True)
-                            body['mimetype'] = content_type
+                        #only support one part
+                        body['value'] = part.get_payload(decode=True)
+                        body['mimetype'] = part.get_content_type() or ''
+                        break
+
             except Exception as ex:
                 raise ex
         # not multipart
