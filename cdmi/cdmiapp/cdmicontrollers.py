@@ -229,10 +229,15 @@ class ObjectController(CDMIBaseController):
             body = {}
             body['objectType'] = Consts.CDMI_APP_OBJECT
             body['objectName'] = self.object_name
-            body['parentURI'] = '/'.join(['', self.cdmi_root,
+            if self.parent_name:
+                body['parentURI'] = '/'.join(['', self.cdmi_root,
                                           self.account_name,
                                           self.container_name,
                                           self.parent_name, ''])
+            else:
+                body['parentURI'] = '/'.join(['', self.cdmi_root,
+                                          self.account_name,
+                                          self.container_name, ''])
 
             body['capabilitiesURI'] = '/'.join(['', self.cdmi_root,
                                                self.account_name,

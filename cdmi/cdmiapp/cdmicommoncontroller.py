@@ -210,9 +210,8 @@ class CDMIBaseController(Controller):
                             #only support one part
                             body['value'] = part.get_payload(decode=True)
                             body['mimetype'] = part.get_content_type() or ''
-                    if i > 2:
-                        break
-
+                            # got the value and mime type, discard other parts
+                            break
             except Exception as ex:
                 raise ex
         # not multipart
