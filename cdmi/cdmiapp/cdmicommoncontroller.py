@@ -201,9 +201,16 @@ class CDMIBaseController(Controller):
 
                 for i, part in enumerate(message.walk()):
                     if i > 0:
-                        #only support one part
-                        body['value'] = part.get_payload(decode=True)
-                        body['mimetype'] = part.get_content_type() or ''
+                        content_type = part.get_content_type() or ''
+                        if (content_type.find('application/cdmi-object') >= 0
+                             and is_cdmi_type):
+                            payload = part.get_payload(decode=True)
+                            body.update(json.loads(payload))
+                        else:
+                            #only support one part
+                            body['value'] = part.get_payload(decode=True)
+                            body['mimetype'] = part.get_content_type() or ''
+                    if i > 2:
                         break
 
             except Exception as ex:
