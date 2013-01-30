@@ -369,7 +369,7 @@ class CDMICommonController(CDMIBaseController):
             body['value'] = base64.encodestring(object_body)
         else:
             body['value'] = object_body
-        body['valuerange'] = '0-' + str(len(object_body))
+        body['valuerange'] = '0-' + str(len(object_body) - 1)
         if env.get('HTTP_ACCEPT', '').find('multipart/') >= 0:
             # It is a multipart request, we need to make up the body
             boundary = "%.32x" % random.randint(0, 256 ** 16)
