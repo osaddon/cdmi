@@ -340,8 +340,6 @@ class CDMICommonController(CDMIBaseController):
         body['objectType'] = Consts.CDMI_APP_OBJECT
         body['objectName'] = self.object_name
 
-        self.logger.info('tongli')
-
         if self.parent_name != '':
             body['parentURI'] = '/'.join(['', self.cdmi_root,
                                           self.account_name,

@@ -77,8 +77,6 @@ class CapabilityController(Controller):
         self.container_name = container_name
         self.object_name = object_name
         self.parent_name = parent_name
-        self.logger.info('tongli')
-        self.logger.info(self.container_name)
 
     # Use GET to handle all cdmi log in attempt and respond with X-Storage-Url
     def GET(self, env, start_response):
