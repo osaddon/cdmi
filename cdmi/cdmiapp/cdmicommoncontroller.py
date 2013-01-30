@@ -453,7 +453,10 @@ class CDMICommonController(CDMIBaseController):
                     if tracking_device.get(child_name) is None:
                         tracking_device[child_name] = child_name
                         body['children'].append(child_name)
-        body['childrenRange'] = '0-' + str(len(body['children']))
+        if body['children'] == []:
+            body['childrenRange'] = ''
+        else:
+            body['childrenRange'] = '0-' + str(len(body['children']) - 1)
         res.body = json.dumps(body, indent=2)
         res.status_int = 200
 

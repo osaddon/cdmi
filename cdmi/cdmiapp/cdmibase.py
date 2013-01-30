@@ -243,7 +243,11 @@ class AccountController(Controller):
             children = json.loads(res.body)
             for child in children:
                 body['children'].append(child['name'] + '/')
-        body['childrenRange'] = '0-' + str(len(body['children']))
+
+        if body['children'] == []:
+            body['childrenRange'] = ''
+        else:
+            body['childrenRange'] = '0-' + str(len(body['children']) - 1)
         res.body = json.dumps(body, indent=2)
 
         return res
