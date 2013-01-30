@@ -24,6 +24,7 @@ import json
 import base64
 import email
 import mimetypes
+import random
 
 
 class CDMIBaseController(Controller):
@@ -339,6 +340,8 @@ class CDMICommonController(CDMIBaseController):
         body['objectType'] = Consts.CDMI_APP_OBJECT
         body['objectName'] = self.object_name
 
+        self.logger.info('tongli')
+
         if self.parent_name != '':
             body['parentURI'] = '/'.join(['', self.cdmi_root,
                                           self.account_name,
@@ -369,8 +372,24 @@ class CDMICommonController(CDMIBaseController):
         else:
             body['value'] = object_body
         body['valuerange'] = '0-' + str(len(object_body))
-        res.body = json.dumps(body, indent=2)
-        res.status_int = os_res.status_int
+        if env.get('HTTP_ACCEPT', '').find('multipart/') >= 0:
+            # It is a multipart request, we need to make up the body
+            boundary = "%.32x" % random.randint(0, 256 ** 16)
+            res.body = '\r\n--' + boundary + '\r\n'
+            res.body += 'Content-Type: application/cdmi-object\r\n\r\n'
+            value = body['value']
+            del body['value']
+            res.body += json.dumps(body, indent=2)
+            res.body += '\r\n--' + boundary + '\r\n'
+            res.body += 'Content-Type: ' + body['mimetype'] + '\r\n'
+            res.body += ('Content-Transfer-Encoding: ' +
+                         body['valuetransferencoding'] + '\r\n\r\n')
+            res.body += value
+            res.body += '\r\n--' + boundary + '--'
+            res.headers['Content-Type'] = 'multipart/mixed'
+        else:
+            res.body = json.dumps(body, indent=2)
+            res.status_int = os_res.status_int
 
         return res
 

@@ -84,8 +84,8 @@ class CdmiMiddleware(object):
             accept_is_container = \
                 accept.find('application/cdmi-container') >= 0 or False
 
-            accept_is_object = \
-                accept.find('application/cdmi-object') >= 0 or False
+            accept_is_object = (accept.find('multipart/') >= 0 or
+                accept.find('application/cdmi-object') >= 0 or False)
 
             content_length = int(env.get('CONTENT_LENGTH') or '0')
 
