@@ -361,7 +361,7 @@ class CDMICommonController(CDMIBaseController):
         # Handling CDMI metadata
         body['metadata'] = self._process_metadata(headers)
         body['mimetype'] = headers.get('content-type', '')
-        encoding = headers.get(Consts.VALUE_ENCODING, 'utf-8')
+        encoding = headers.get(Consts.VALUE_ENCODING, '8BIT')
         body['valuetransferencoding'] = encoding
         if (encoding.lower() == Consts.ENCODING_BASE64 or
             'text/' not in body['mimetype']):
