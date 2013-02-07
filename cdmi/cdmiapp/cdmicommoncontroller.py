@@ -307,12 +307,12 @@ class CDMICommonController(CDMIBaseController):
 
     def _read_object(self, env, start_response, headers):
 
-        query_string = env.get('QUERY_STRING', '').lower()
+        query_string = env.get('QUERY_STRING', '')
         if len(query_string) > 0:
             params = parse_qs(query_string, True, False)
             new_qs = ''
             for key, value in params.items():
-                if 'value:bytes' == key:
+                if 'value:bytes' == key.lower():
                     env['HTTP_RANGE'] = 'bytes=' + ''.join(value)
                 else:
                     new_qs += key + '=' + ''.join(value) + '&'
