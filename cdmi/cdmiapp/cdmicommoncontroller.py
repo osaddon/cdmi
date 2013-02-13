@@ -361,12 +361,12 @@ class CDMICommonController(CDMIBaseController):
         # Handling CDMI metadata
         body['metadata'] = self._process_metadata(headers)
         body['mimetype'] = headers.get('content-type', '')
-        encoding = headers.get(Consts.VALUE_ENCODING, '8BIT')
+        encoding = headers.get(Consts.VALUE_ENCODING, '7BIT')
         body['valuetransferencoding'] = encoding
         if (encoding.lower() == Consts.ENCODING_BASE64 or
             'text/' not in body['mimetype']):
             body['valuetransferencoding'] = Consts.ENCODING_BASE64
-            body['value'] = base64.encodestring(object_body)
+            body['value'] = base64.encodestring(object_body).strip('\n')
         else:
             body['value'] = object_body
         body['valuerange'] = '0-' + str(len(object_body) - 1)
@@ -380,11 +380,14 @@ class CDMICommonController(CDMIBaseController):
             res.body += json.dumps(body, indent=2)
             res.body += '\r\n--' + boundary + '\r\n'
             res.body += 'Content-Type: ' + body['mimetype'] + '\r\n'
+            res.body += ('Content-Range: bytes 0-' + str(len(value) - 1) +
+                         '/' + str(len(value)) + '\r\n') 
             res.body += ('Content-Transfer-Encoding: ' +
                          body['valuetransferencoding'] + '\r\n\r\n')
             res.body += value
             res.body += '\r\n--' + boundary + '--'
-            res.headers['Content-Type'] = 'multipart/mixed'
+            res.headers['Content-Type'] = ('multipart/mixed;boundary=' +
+                                            boundary)
         else:
             res.body = json.dumps(body, indent=2)
             res.status_int = os_res.status_int

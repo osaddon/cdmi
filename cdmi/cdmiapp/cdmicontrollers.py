@@ -207,7 +207,7 @@ class ObjectController(CDMIBaseController):
                     req.body = str(body.get('value', ''))
                     req.headers['content-type'] = body.get('mimetype',
                         'text/plain').lower()
-                    encoding = body.get('valuetransferencoding', 'utf-8')
+                    encoding = body.get('valuetransferencoding', '7BIT')
                     req.headers[Consts.VALUE_ENCODING] = encoding
                     # if the value is encoded using base64, then
                     # we need to decode it and save as binary
